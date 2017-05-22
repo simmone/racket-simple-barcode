@@ -25,6 +25,12 @@
     (check-equal? (char->barstring #\9 'left_even) "0010111")
     (check-equal? (char->barstring #\9 'right) "1110100")
    )
+
+   (test-case
+    "test-ean13->bar"
+    (check-equal? (ean13->bar "7501031311309") "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
+    )
+
    ))
 
 (run-tests test-lib)

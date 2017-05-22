@@ -3,6 +3,7 @@
 (provide (contract-out
           [ean13-checksum (-> string? exact-nonnegative-integer?)]
           [char->barstring(-> char? symbol? string?)]
+          [ean13->bar (-> string? string?)]
           ))
 
 (define (ean13-checksum barcode)
@@ -59,3 +60,8 @@
            2])])
     (list-ref (hash-ref char_bar_map ch) place)))
 
+(define (ean13->bar ean13)
+  (string-append
+   "101"
+   "01010"
+   "101"))
