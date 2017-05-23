@@ -4,7 +4,10 @@
           [ean13-checksum (-> string? exact-nonnegative-integer?)]
           [char->barstring(-> char? symbol? string?)]
           [ean13->bar (-> string? string?)]
+          [draw-bar (-> (is-a?/c bitmap-dc%) pair? (or/c (is-a?/c color%) string?) exact-nonnegative-integer? exact-nonnegative-integer? void?)]
           ))
+
+(require racket/draw)
 
 (define (ean13-checksum barcode)
   (let-values ([
@@ -95,3 +98,11 @@
      (char->barstring (list-ref char_list 11) 'right)
      (char->barstring (list-ref char_list 12) 'right)
      "101")))
+
+(define (draw-bar dc pos color bar_width bar_height)
+  (when (not (string=? color "transparent"))
+        (send dc set-pen color 1 'solid)
+        (send dc set-brush color 'solid)
+
+        (send dc draw-rectangle (car pos) (cdr pos) bar_width bar_height)))
+

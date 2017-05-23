@@ -2,6 +2,7 @@
 
 (require rackunit/text-ui)
 (require racket/date)
+(require racket/draw)
 
 (require rackunit "lib.rkt")
 
@@ -31,6 +32,17 @@
     "test-ean13->bar"
     (check-equal? (ean13->bar "7501031311309") "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
     )
+
+   (test-case
+    "test-draw-bar"
+    
+    (let* ([canvas_width 100]
+           [target (make-bitmap canvas_width canvas_width)]
+           [dc (new bitmap-dc% [bitmap target])])
+
+      (draw-bar dc '(10 . 10) "black" 10 50)
+
+      (send target save-file "test.png" 'png)))
 
    ))
 
