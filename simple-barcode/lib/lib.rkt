@@ -5,6 +5,7 @@
           [char->barstring(-> char? symbol? string?)]
           [ean13->bar (-> string? string?)]
           [draw-bar (-> (is-a?/c bitmap-dc%) pair? (or/c (is-a?/c color%) string?) exact-nonnegative-integer? exact-nonnegative-integer? void?)]
+          [get-dimension (-> exact-nonnegative-integer? pair?)]
           ))
 
 (require racket/draw)
@@ -99,10 +100,20 @@
      (char->barstring (list-ref char_list 12) 'right)
      "101")))
 
-(define (draw-bar dc pos color bar_width bar_height)
+(define *quiet_zone_width* 10)
+(define *height_ratio* 20)
+(define *top_width* 2)
+(define *down_width* 10)
+(define *guard_width* 3)
+
+(define (get-dimension bar_width)
+  (cons
+   (* (+ *quiet_zone_width* 3 3 (* 6 7) 5 (* 6 7) 3 *quiet_zone_width*) bar_width)
+   (+ *top_width* (* bar_width *height_ratio*) *down_width*)))
+
+(define (draw-bar dc pos color bar_width)
   (when (not (string=? color "transparent"))
         (send dc set-pen color 1 'solid)
         (send dc set-brush color 'solid)
 
-        (send dc draw-rectangle (car pos) (cdr pos) bar_width bar_height)))
-
+        (send dc draw-rectangle (car pos) (cdr pos) bar_width)))

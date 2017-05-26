@@ -44,6 +44,15 @@
 
       (send target save-file "test.png" 'png)))
 
+   (test-case
+    "test-get-dimension"
+    
+    (let* ([bar_width 1]
+           [dimension (get-dimension bar_width)])
+      (check-equal? (car dimension) 118)
+      (check-equal? (cdr dimension) 32))
+    )
+
    ))
 
 (run-tests test-lib)
