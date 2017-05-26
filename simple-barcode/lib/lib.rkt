@@ -4,7 +4,7 @@
           [ean13-checksum (-> string? exact-nonnegative-integer?)]
           [char->barstring(-> char? symbol? string?)]
           [ean13->bar (-> string? string?)]
-          [draw-bar (-> (is-a?/c bitmap-dc%) pair? (or/c (is-a?/c color%) string?) exact-nonnegative-integer? exact-nonnegative-integer? void?)]
+          [draw-bar (-> (is-a?/c bitmap-dc%) pair? pair? exact-nonnegative-integer? void?)]
           [get-dimension (-> exact-nonnegative-integer? pair?)]
           ))
 
@@ -111,9 +111,24 @@
    (* (+ *quiet_zone_width* 3 3 (* 6 7) 5 (* 6 7) 3 *quiet_zone_width*) bar_width)
    (+ *top_width* (* bar_width *height_ratio*) *down_width*)))
 
-(define (draw-bar dc pos color bar_width)
+(define (set-color dc color)
   (when (not (string=? color "transparent"))
-        (send dc set-pen color 1 'solid)
-        (send dc set-brush color 'solid)
+        (send dc set-pen color 1 'solid))
 
-        (send dc draw-rectangle (car pos) (cdr pos) bar_width)))
+  (send dc set-brush color 'solid))
+
+(define (draw-background dc color bar_width)
+  (set-color dc color)
+  (let* ([dimension (get-dimension bar_width)]
+         [width (car dimension)]
+         [height (cdr dimension)])
+    (send dc draw-rectangle 0 0 width height)))
+
+(define (draw-bar dc pos_pair color_pair bar_width)
+  (let ([front_color (car color_pair)]
+        [back_color (cdr color_pair)])
+    (draw-background dc back_color bar_width)
+
+    (set-color dc front_color)
+
+    (send dc draw-rectangle (car pos_pair) (cdr pos_pair) bar_width (* bar_width *height_ratio*))))

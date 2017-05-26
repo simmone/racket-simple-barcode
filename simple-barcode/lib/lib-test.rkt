@@ -40,7 +40,7 @@
            [target (make-bitmap canvas_width canvas_width)]
            [dc (new bitmap-dc% [bitmap target])])
 
-      (draw-bar dc '(10 . 10) "black" 10 50)
+      (draw-bar dc '(10 . 10) '("black" . "white") 2)
 
       (send target save-file "test.png" 'png)))
 
