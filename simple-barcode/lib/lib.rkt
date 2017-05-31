@@ -4,8 +4,8 @@
           [ean13-checksum (-> string? exact-nonnegative-integer?)]
           [char->barstring(-> char? symbol? string?)]
           [ean13->bar (-> string? string?)]
-          [draw-bar (-> (is-a?/c bitmap-dc%) pair? pair? exact-nonnegative-integer? void?)]
           [get-dimension (-> exact-nonnegative-integer? pair?)]
+          [draw-bar (-> pair? exact-nonnegative-integer? path-string? boolean?)]
           ))
 
 (require racket/draw)
@@ -101,15 +101,15 @@
      "101")))
 
 (define *quiet_zone_width* 10)
-(define *height_ratio* 20)
-(define *top_width* 2)
-(define *down_width* 10)
+(define *bar_height* 80)
+(define *top_margin* 10)
+(define *down_margin* 20)
 (define *guard_width* 3)
 
-(define (get-dimension bar_width)
+(define (get-dimension brick_width)
   (cons
-   (* (+ *quiet_zone_width* 3 3 (* 6 7) 5 (* 6 7) 3 *quiet_zone_width*) bar_width)
-   (+ *top_width* (* bar_width *height_ratio*) *down_width*)))
+   (* (+ *quiet_zone_width* 3 3 (* 6 7) 5 (* 6 7) 3 *quiet_zone_width*) brick_width)
+   (* (+ *top_margin* *bar_height* *down_margin*) brick_width)))
 
 (define (set-color dc color)
   (when (not (string=? color "transparent"))
@@ -117,18 +117,27 @@
 
   (send dc set-brush color 'solid))
 
-(define (draw-background dc color bar_width)
+(define (draw-background dc color brick_width)
   (set-color dc color)
-  (let* ([dimension (get-dimension bar_width)]
+  (let* ([dimension (get-dimension brick_width)]
          [width (car dimension)]
          [height (cdr dimension)])
     (send dc draw-rectangle 0 0 width height)))
 
-(define (draw-bar dc pos_pair color_pair bar_width)
-  (let ([front_color (car color_pair)]
-        [back_color (cdr color_pair)])
-    (draw-background dc back_color bar_width)
+(define (draw-bar color_pair brick_width file_name)
+  (let* ([front_color (car color_pair)]
+         [back_color (cdr color_pair)]
+         [dimension (get-dimension brick_width)]
+         [width (car dimension)]
+         [height (cdr dimension)]
+         [x (* *quiet_zone_width* brick_width)]
+         [y (* *top_margin* brick_width)]
+         [target (make-bitmap width height)]
+         [dc (new bitmap-dc% [bitmap target])])
+
+    (draw-background dc back_color brick_width)
 
     (set-color dc front_color)
+    (send dc draw-rectangle x y brick_width (* brick_width *bar_height*))
 
-    (send dc draw-rectangle (car pos_pair) (cdr pos_pair) bar_width (* bar_width *height_ratio*))))
+    (send target save-file file_name 'png)))
