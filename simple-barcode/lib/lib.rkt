@@ -5,7 +5,7 @@
           [char->barstring(-> char? symbol? string?)]
           [ean13->bar (-> string? string?)]
           [get-dimension (-> exact-nonnegative-integer? pair?)]
-          [draw-bar (-> pair? exact-nonnegative-integer? path-string? boolean?)]
+          [draw-ean13 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           ))
 
 (require racket/draw)
@@ -124,7 +124,7 @@
          [height (cdr dimension)])
     (send dc draw-rectangle 0 0 width height)))
 
-(define (draw-bar color_pair brick_width file_name)
+(define (draw-ean13 ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 1])
   (let* ([front_color (car color_pair)]
          [back_color (cdr color_pair)]
          [dimension (get-dimension brick_width)]
@@ -132,12 +132,18 @@
          [height (cdr dimension)]
          [x (* *quiet_zone_width* brick_width)]
          [y (* *top_margin* brick_width)]
+         [bar_height (* brick_width *bar_height*)]
          [target (make-bitmap width height)]
          [dc (new bitmap-dc% [bitmap target])])
 
     (draw-background dc back_color brick_width)
 
     (set-color dc front_color)
-    (send dc draw-rectangle x y brick_width (* brick_width *bar_height*))
+    (let loop ([loop_list (string->list (ean13->bar ean13))]
+               [start_x x])
+      (when (not (null? loop_list))
+            (when (char=? (car loop_list) #\1)
+                  (send dc draw-rectangle start_x y brick_width bar_height))
+            (loop (cdr loop_list) (+ start_x brick_width))))
 
     (send target save-file file_name 'png)))

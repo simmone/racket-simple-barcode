@@ -34,23 +34,27 @@
     )
 
    (test-case
-    "test-draw-bar"
-    
-    (draw-bar '("black" . "white") 1 "test1.png")
-
-    (draw-bar '("black" . "white") 2 "test2.png")
-
-    (draw-bar '("black" . "white") 5 "test5.png")
-    )
-
-   (test-case
     "test-get-dimension"
     
     (let* ([brick_width 1]
            [dimension (get-dimension brick_width)])
       (check-equal? (car dimension) 118)
-;      (check-equal? (cdr dimension) 32)
+      (check-equal? (cdr dimension) 110)
       )
+    )
+
+   (test-case
+    "test-draw-ean13"
+    
+    (draw-ean13 "7501031311309" "test1.png")
+
+    (draw-ean13 "7501031311309" "test2.png" #:brick_width 2)
+
+    (draw-ean13 "7501031311309" "test5.png" #:brick_width 5)
+
+    (draw-ean13 "7501031311309" "test_color.png" #:color_pair '("red" . "blue"))
+
+    (draw-ean13 "7501031311309" "test_trans.png" #:color_pair '("red" . "transparent"))
     )
 
    ))
