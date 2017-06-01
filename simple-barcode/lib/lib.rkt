@@ -84,24 +84,25 @@
   (let* ([char_list (string->list ean13)]
          [parity_number (car char_list)])
     (string-append
-     "101"
+     "202"
      (char->barstring (list-ref char_list 1) (if (eq? (char-parity parity_number 1) 'odd) 'left_odd 'left_even))
      (char->barstring (list-ref char_list 2) (if (eq? (char-parity parity_number 2) 'odd) 'left_odd 'left_even))
      (char->barstring (list-ref char_list 3) (if (eq? (char-parity parity_number 3) 'odd) 'left_odd 'left_even))
      (char->barstring (list-ref char_list 4) (if (eq? (char-parity parity_number 4) 'odd) 'left_odd 'left_even))
      (char->barstring (list-ref char_list 5) (if (eq? (char-parity parity_number 5) 'odd) 'left_odd 'left_even))
      (char->barstring (list-ref char_list 6) (if (eq? (char-parity parity_number 6) 'odd) 'left_odd 'left_even))
-     "01010"
+     "02020"
      (char->barstring (list-ref char_list 7) 'right)
      (char->barstring (list-ref char_list 8) 'right)
      (char->barstring (list-ref char_list 9) 'right)
      (char->barstring (list-ref char_list 10) 'right)
      (char->barstring (list-ref char_list 11) 'right)
      (char->barstring (list-ref char_list 12) 'right)
-     "101")))
+     "202")))
 
 (define *quiet_zone_width* 10)
 (define *bar_height* 80)
+(define *foot_height* 8)
 (define *top_margin* 10)
 (define *down_margin* 20)
 (define *guard_width* 3)
@@ -130,9 +131,10 @@
          [dimension (get-dimension brick_width)]
          [width (car dimension)]
          [height (cdr dimension)]
-         [x (* *quiet_zone_width* brick_width)]
-         [y (* *top_margin* brick_width)]
+         [x (* (add1 *quiet_zone_width*) brick_width)]
+         [y (* (add1 *top_margin*) brick_width)]
          [bar_height (* brick_width *bar_height*)]
+         [foot_height (* brick_width (+ *bar_height* *foot_height*))]
          [target (make-bitmap width height)]
          [dc (new bitmap-dc% [bitmap target])])
 
@@ -142,8 +144,15 @@
     (let loop ([loop_list (string->list (ean13->bar ean13))]
                [start_x x])
       (when (not (null? loop_list))
-            (when (char=? (car loop_list) #\1)
-                  (send dc draw-rectangle start_x y brick_width bar_height))
+            (cond
+             [(char=? (car loop_list) #\1)
+              (send dc draw-rectangle start_x y brick_width bar_height)]
+             [(char=? (car loop_list) #\2)
+              (send dc draw-rectangle start_x y brick_width foot_height)])
+
             (loop (cdr loop_list) (+ start_x brick_width))))
+
+    (send dc set-font (make-font #:size 24 #:face "Monospace" #:family 'modern))
+    (send dc draw-text "9" 10 (* (+ *top_margin* *bar_height* 2) brick_width))
 
     (send target save-file file_name 'png)))
