@@ -55,16 +55,14 @@
     (let* ([brick_width 1]
            [dimension (get-dimension brick_width)])
       (check-equal? (car dimension) 118)
-      (check-equal? (cdr dimension) 110)
+      (check-equal? (cdr dimension) 90)
       )
     )
 
    (test-case
     "test-draw-ean13"
     
-    (draw-ean13 "7501031311309" "test1.png")
-
-    (draw-ean13 "7501031311309" "test2.png" #:brick_width 2)
+    (draw-ean13 "7501031311309" "test.png")
 
     (draw-ean13 "7501031311309" "test5.png" #:brick_width 5)
 

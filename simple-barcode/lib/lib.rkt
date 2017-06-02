@@ -101,7 +101,7 @@
      '("$" . "202"))))
 
 (define *quiet_zone_width* 10)
-(define *bar_height* 80)
+(define *bar_height* 60)
 (define *foot_height* 7)
 (define *font_size* 5)
 (define *top_margin* 10)
@@ -120,13 +120,14 @@
   (send dc set-brush color 'solid))
 
 (define (draw-background dc color brick_width)
-  (set-color dc color)
-  (let* ([dimension (get-dimension brick_width)]
-         [width (car dimension)]
-         [height (cdr dimension)])
-    (send dc draw-rectangle 0 0 width height)))
+  (when (not (string=? color "transparent"))
+        (set-color dc color)
+        (let* ([dimension (get-dimension brick_width)]
+               [width (car dimension)]
+               [height (cdr dimension)])
+          (send dc draw-rectangle 0 0 width height))))
 
-(define (draw-ean13 ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 1])
+(define (draw-ean13 ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([front_color (car color_pair)]
          [back_color (cdr color_pair)]
          [dimension (get-dimension brick_width)]
@@ -142,7 +143,11 @@
     (draw-background dc back_color brick_width)
 
     (set-color dc front_color)
+    (send dc set-text-foreground front_color)
     (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
+    
+    ;; first char
+    (send dc draw-text (substring ean13 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
 
     (let loop-group ([group_list (ean13->bar_group ean13)]
                      [start_x x])
