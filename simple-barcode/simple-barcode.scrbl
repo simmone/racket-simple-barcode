@@ -24,13 +24,12 @@ select a type, size, color, then write a string to barcode.
 there is also a complete read and write example on github:@link["https://github.com/simmone/racket-simple-barcode/blob/master/simple-barcode/example/example.rkt"]{includedin the source}.
 
 @defproc[(barcode-write
-              [code (string?)]
-              [output_file_path (path-string?)]
-              [#:type (symbol?) 'ean13]
-              [#:color_pair (pair?) '("black" . "white")]
-              [#:brick_width (exact-nonnegative-integer?) 2])
+              [code string?]
+              [output_file_path path-string?]
+              [#:code_type code_type symbol? 'ean13]
+              [#:color_pair color_pair pair? '("black" . "white")]
+              [#:brick_width brick_width exact-nonnegative-integer? 2])
             boolean?]{
-  default type is ean13.
 }
 
 @section{Complete Example}
