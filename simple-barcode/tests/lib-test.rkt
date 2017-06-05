@@ -4,7 +4,7 @@
 (require racket/date)
 (require racket/draw)
 
-(require rackunit "lib.rkt")
+(require rackunit "../lib/lib.rkt")
 
 (define test-lib
   (test-suite
@@ -57,18 +57,6 @@
       (check-equal? (car dimension) 118)
       (check-equal? (cdr dimension) 90)
       )
-    )
-
-   (test-case
-    "test-draw-ean13"
-    
-    (draw-ean13 "7501031311309" "test.png")
-
-    (draw-ean13 "7501031311309" "test5.png" #:brick_width 5)
-
-    (draw-ean13 "7501031311309" "test_color.png" #:color_pair '("red" . "blue"))
-
-    (draw-ean13 "7501031311309" "test_trans.png" #:color_pair '("red" . "transparent"))
     )
 
    ))
