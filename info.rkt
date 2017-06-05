@@ -8,3 +8,7 @@
                "rackunit-lib"
                "draw-lib"
                ))
+
+(define build-deps '("racket-doc"
+                     "scribble-lib"))
+
