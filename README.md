@@ -21,16 +21,14 @@ A Barcode reader and writer for Racket
   
 ```
 
-<p>
-default, brick_width = 2:
+default, brick_width = 2:<br>
 ![ScreenShot](simple-barcode/example/barcode_ean13.png)
-</p>
 
 brick_width = 5:<br>
-![ScreenShot](simple-barcode/example/barcode_ean13.png)
+![ScreenShot](simple-barcode/example/barcode_ean13_w5.png)
 
 change front and background color:<br>
-![ScreenShot](simple-barcode/example/barcode_ean13.png)
+![ScreenShot](simple-barcode/example/barcode_ean13_color.png)
 
 set transparent background:<br>
-![ScreenShot](simple-barcode/example/barcode_ean13.png)
+![ScreenShot](simple-barcode/example/barcode_ean13_trans.png)
