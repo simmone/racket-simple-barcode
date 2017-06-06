@@ -147,7 +147,7 @@
     (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
     
     ;; first char
-    (send dc draw-text (substring ean13 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
+    (send dc draw-text (substring ean13 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
 
     (let loop-group ([group_list (ean13->bar_group ean13)]
                      [start_x x])

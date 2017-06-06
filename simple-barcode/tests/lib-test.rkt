@@ -13,8 +13,13 @@
    (test-case 
     "test-ean13-checksum"
     (check-equal? (ean13-checksum "001234567890") 5)
+    (check-equal? (ean13-checksum "509876543210") 0)
+
     (check-equal? (ean13-checksum "001234067890") 0)
+    (check-equal? (ean13-checksum "009876043210") 0)
+
     (check-equal? (ean13-checksum "750103131130") 9)
+    (check-equal? (ean13-checksum "903113130105") 7)
    )
 
    (test-case
