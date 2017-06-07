@@ -9,7 +9,8 @@
           [pic->points (-> path-string? (listof list?))]
           [find-threshold (-> list? exact-nonnegative-integer?)]
           [search-barcode-on-row (-> list? (or/c exact-nonnegative-integer? #f) (or/c list? #f))]
-          [search-barcode (-> (listof list?) (or/c string? #f))]
+          [search-barcode (-> (listof list?) string?)]
+          [read-ean13 (-> path-string? string?)]
           ))
 
 (require racket/draw)
@@ -218,6 +219,15 @@
             (row-loop (cdr loop_row_list)))
           (floor (/ (- max_value min_value) 2))))))
 
+(define (points->bw points_list threshold)
+  (map
+   (lambda (row)
+     (map
+      (lambda (col)
+        (if (> col threshold) 0 1))
+      row))
+   points_list))
+
 (define (squash-points points width)
   (let ([min_width (ceiling (* width 0.5))])
     (let loop ([loop_points points]
@@ -253,15 +263,16 @@
         dark_length)))
 
 (define (search-barcode-on-row points_row guess_module_width)
-  (let ([max_module_width (floor (/ (length points_row) 95))])
+  (let ([max_module_width (floor (/ (length points_row) 95))]
+        [loop_module_width guess_module_width])
     (let loop ([points points_row])
       (if (not (null? points))
           (if (= (car points) 1)
               (begin
-                (when (not guess_module_width)
-                      (set! guess_module_width (guess-first-dark-width points)))
-
-                (let* ([squashed_line (squash-points points_row guess_module_width)]
+                (when (not loop_module_width)
+                      (set! loop_module_width (guess-first-dark-width points)))
+                
+                (let* ([squashed_line (squash-points points_row loop_module_width)]
                        [squashed_cols (car squashed_line)]
                        [squashed_positions (cdr squashed_line)]
                        [original_str 
@@ -272,11 +283,11 @@
                   (if (regexp-match #px"101[0-1]{42}01010[0-1]{42}101" squashed_str)
                       (let ([barcode_pos (car (regexp-match-positions #px"101[0-1]{42}01010[0-1]{42}101" squashed_str))])
                         (list
-                         guess_module_width
+                         loop_module_width
                          (car barcode_pos)
                          (substring squashed_str (car barcode_pos) (cdr barcode_pos))))
-                      (if (> (length points) guess_module_width)
-                          (loop (list-tail points guess_module_width))
+                      (if (> (length points) loop_module_width)
+                          (loop (list-tail points loop_module_width))
                           #f))))
               (loop (cdr points)))
           #f))))
@@ -295,7 +306,6 @@
                   (let ([module_width (list-ref result 0)]
                         [start_pos (list-ref result 1)]
                         [barcode (list-ref result 2)])
-
                     (if (and
                          (= start_pos loop_start_pos)
                          (string=? barcode loop_barcode))
@@ -317,4 +327,15 @@
                    ""
                    0
                    #f)))
-            #f))))
+            ""))))
+
+(define (read-ean13 pic_path)
+   (let (
+         [step1_points_list #f]
+         [step2_threshold #f]
+         [step3_bw_points #f]
+         )
+     (set! step1_points_list (pic->points pic_path))
+     (set! step2_threshold (find-threshold step1_points_list))
+     (set! step3_bw_points (points->bw step1_points_list step2_threshold))
+     (search-barcode step3_bw_points)))

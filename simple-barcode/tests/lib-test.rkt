@@ -8,6 +8,9 @@
 
 (require racket/runtime-path)
 (define-runtime-path ean13_file "../example/barcode_ean13.png")
+(define-runtime-path ean13_w5_file "../example/barcode_ean13_w5.png")
+(define-runtime-path ean13_color_file "../example/barcode_ean13_color.png")
+(define-runtime-path ean13_trans_file "../example/barcode_ean13_trans.png")
 
 (define test-lib
   (test-suite
@@ -131,7 +134,7 @@
     ))
 
    (test-case
-    "test-search-barcode-on-row"
+    "test-search-barcode"
     
     (let* (
            [real_row '(
@@ -198,10 +201,19 @@
       (check-equal? (search-barcode points_list_true1) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
       (check-equal? (search-barcode points_list_true2) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
       (check-equal? (search-barcode points_list_true3) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
-      (check-equal? (search-barcode points_list_false1) #f)
-      (check-equal? (search-barcode points_list_false2) #f)
-      (check-equal? (search-barcode points_list_false3) #f)
+      (check-equal? (search-barcode points_list_false1) "")
+      (check-equal? (search-barcode points_list_false2) "")
+      (check-equal? (search-barcode points_list_false3) "")
     ))
+   
+   (test-case
+    "test-read-ean13"
+
+    (check-equal? (read-ean13 ean13_file) "7501031311309")
+    (check-equal? (read-ean13 ean13_w5_file) "7501031311309")
+    (check-equal? (read-ean13 ean13_color_file) "7501031311309")
+    (check-equal? (read-ean13 ean13_trans_file) "7501031311309")
+    )
 
    ))
 
