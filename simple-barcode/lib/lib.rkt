@@ -213,6 +213,9 @@
               
               (loop-group (cdr group_list) (+ start_x (* (string-length hold_bar) brick_width))))))
 
+    ;; last char
+    (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
+
     (send target save-file file_name 'png)))
 
 (define (bitmap->points img)
