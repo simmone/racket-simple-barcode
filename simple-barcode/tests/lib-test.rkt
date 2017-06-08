@@ -12,6 +12,8 @@
 (define-runtime-path ean13_color_file "../example/barcode_ean13_color.png")
 (define-runtime-path ean13_trans_file "../example/barcode_ean13_trans.png")
 
+(define-runtime-path ean13_test1 "ean13_test1.png")
+
 (define test-lib
   (test-suite
    "test-ean13"
@@ -215,10 +217,12 @@
    (test-case
     "test-read-ean13"
 
-;    (check-equal? (read-ean13 ean13_file) "7501031311309")
-;    (check-equal? (read-ean13 ean13_w5_file) "7501031311309")
+    (check-equal? (read-ean13 ean13_file) "7501031311309")
+    (check-equal? (read-ean13 ean13_w5_file) "7501031311309")
     (check-equal? (read-ean13 ean13_color_file) "7501031311309")
-;    (check-equal? (read-ean13 ean13_trans_file) "7501031311309")
+    (check-equal? (read-ean13 ean13_trans_file) "7501031311309")
+
+    (check-equal? (read-ean13 ean13_test1) "5901234123457")
     )
 
    ))

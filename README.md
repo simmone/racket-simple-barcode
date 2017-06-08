@@ -9,15 +9,24 @@ A Barcode reader and writer for Racket
 
 #lang racket
 
-(require simple-barcode)
+  (require simple-barcode)
 
-(draw-ean13 "7501031311309" "barcode_ean13.png")
+  (barcode-write "7501031311309" "barcode_ean13.png")
 
-(draw-ean13 "7501031311309" "barcode_ean13_w5.png" #:brick_width 5)
+  (barcode-write "7501031311309" "barcode_ean13_w5.png" #:brick_width 5)
 
-(draw-ean13 "7501031311309" "barcode_ean13_color.png" #:color_pair '("red" . "blue"))
+  (barcode-write "7501031311309" "barcode_ean13_color.png" #:color_pair '("red" . "gray"))
 
-(draw-ean13 "7501031311309" "barcode_ean13_trans.png" #:color_pair '("red" . "transparent"))
+  (barcode-write "7501031311309" "barcode_ean13_trans.png" #:color_pair '("red" . "transparent"))
+
+  (printf "~a,~a,~a,~a\n"
+    (barcode-read "barcode_ean13.png")
+  
+    (barcode-read "barcode_ean13_w5.png")
+  
+    (barcode-read "barcode_ean13_color.png")
+
+    (barcode-read "barcode_ean13_trans.png"))
   
 ```
 
@@ -32,3 +41,5 @@ change front and background color:<br>
 
 set transparent background:<br>
 ![ScreenShot](simple-barcode/example/barcode_ean13_trans.png)
+
+7501031311309,7501031311309,7501031311309,7501031311309

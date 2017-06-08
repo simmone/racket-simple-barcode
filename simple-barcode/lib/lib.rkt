@@ -237,6 +237,35 @@
 (define (pic->points pic_path)
   (bitmap->points (make-object bitmap% pic_path)))
 
+(define (points->pixels points_list pixel_map)
+  (let loop ([rows points_list]
+             [row_index 0]
+             [bytes_list '()])
+    (if (not (null? rows))
+        (loop
+         (cdr rows)
+         (add1 row_index)
+         (cons
+          (let col-loop ([cols (car rows)]
+                         [col_index 0]
+                         [col_bytes_list '()])
+            (if (not (null? cols))
+                (if (hash-has-key? pixel_map (cons row_index col_index))
+                    (col-loop (cdr cols) (add1 col_index) `(,@(hash-ref pixel_map (cons row_index col_index)) ,@col_bytes_list))
+                    (if (= (car cols) 0)
+                        (col-loop (cdr cols) (add1 col_index) (cons 255 (cons 255 (cons 255 (cons 255 col_bytes_list)))))
+                        (col-loop (cdr cols) (add1 col_index) (cons 0 (cons 0 (cons 0 (cons 255 col_bytes_list)))))))
+                (reverse col_bytes_list)))
+          bytes_list))
+        (list->bytes (foldr (lambda (a b) (append a b)) '() (reverse bytes_list))))))
+
+(define (points->pic points_list pic_path pixel_map)
+  (let* ([width (length (car points_list))]
+         [height (length points_list)]
+         [points_pic (make-object bitmap% width height)])
+    (send points_pic set-argb-pixels 0 0 width height (points->pixels points_list pixel_map))
+    (send points_pic save-file pic_path 'png)))
+
 (define (find-threshold point_rows)
   (let row-loop ([loop_row_list point_rows]
                  [max_value 0]
@@ -255,9 +284,7 @@
                 (col-loop (cdr loop_col_list) col_max_value col_min_value)]
                )
               (row-loop (cdr loop_row_list) col_max_value col_min_value)))
-          (begin
-            (printf "min:~a, max:~a\n" min_value max_value)
-            (floor (/ (- max_value min_value) 2))))))
+        (floor (/ (+ max_value min_value) 2)))))
 
 (define (points->bw points_list threshold)
   (map
@@ -377,7 +404,6 @@
          )
      (set! step1_points_list (pic->points pic_path))
      (set! step2_threshold (find-threshold step1_points_list))
-     (printf "threshold:~a\n" step2_threshold)
      (set! step3_bw_points (points->bw step1_points_list step2_threshold))
      (let ([search_result (search-barcode step3_bw_points)])
        (if search_result
