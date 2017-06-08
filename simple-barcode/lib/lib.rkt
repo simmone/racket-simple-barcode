@@ -2,15 +2,17 @@
 
 (provide (contract-out
           [ean13-checksum (-> string? exact-nonnegative-integer?)]
-          [char->barstring(-> char? symbol? string?)]
+          [char->barstring (-> char? symbol? string?)]
+          [bar->string (-> string? string?)]
           [ean13->bar_group (-> string? (listof pair?))]
           [get-dimension (-> exact-nonnegative-integer? pair?)]
           [draw-ean13 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [pic->points (-> path-string? (listof list?))]
           [find-threshold (-> list? exact-nonnegative-integer?)]
           [search-barcode-on-row (-> list? (or/c exact-nonnegative-integer? #f) (or/c list? #f))]
-          [search-barcode (-> (listof list?) string?)]
+          [search-barcode (-> (listof list?) (or/c string? #f))]
           [read-ean13 (-> path-string? string?)]
+          [get-bar-char-map (-> hash?)]
           ))
 
 (require racket/draw)
@@ -57,13 +59,47 @@
          (#\8 . ("0110111" "0001001" "1001000"))
          (#\9 . ("0001011" "0010111" "1110100"))))
 
+(define (get-bar-char-map)
+  (let ([bar_char_map (make-hash)])
+    (hash-for-each
+     char_bar_map
+     (lambda (char bar_list)
+       (for-each
+        (lambda (rec)
+          (hash-set! bar_char_map rec (string char)))
+        bar_list)))
+    bar_char_map))
+
+(define (bar->string bar_string)
+  (let* ([bar_char_map (get-bar-char-map)]
+         [string_list
+          (list
+           (hash-ref bar_char_map (substring bar_string 3 10))
+           (hash-ref bar_char_map (substring bar_string 10 17))
+           (hash-ref bar_char_map (substring bar_string 17 24))
+           (hash-ref bar_char_map (substring bar_string 24 31))
+           (hash-ref bar_char_map (substring bar_string 31 38))
+           (hash-ref bar_char_map (substring bar_string 38 45))
+
+           (hash-ref bar_char_map (substring bar_string 50 57))
+           (hash-ref bar_char_map (substring bar_string 57 64))
+           (hash-ref bar_char_map (substring bar_string 64 71))
+           (hash-ref bar_char_map (substring bar_string 71 78))
+           (hash-ref bar_char_map (substring bar_string 78 85))
+           (hash-ref bar_char_map (substring bar_string 85 92))
+           )]
+         [first_char (ean13-checksum (foldl (lambda (a b) (string-append a b)) "" string_list))])
+    (string-append
+     (number->string first_char)
+     (foldr (lambda (a b) (string-append a b)) "" string_list))))
+
 (define char_parity_map
   '#hash(
          (#\0 . (none odd  odd  odd  odd  odd  odd))
          (#\1 . (none odd  odd even  odd even  odd))
          (#\2 . (none odd  odd even even  odd even))
          (#\3 . (none odd  odd even even even  odd))
-         (#\4 . (none odd  even odd  odd even even))
+         (#\4 . (none odd even  odd  odd even even))
          (#\5 . (none odd even even  odd  odd even))
          (#\6 . (none odd even even even  odd  odd))
          (#\7 . (none odd even  odd even  odd even))
@@ -202,22 +238,26 @@
   (bitmap->points (make-object bitmap% pic_path)))
 
 (define (find-threshold point_rows)
-  (let ([max_value 0]
-        [min_value 765])
-    (let row-loop ([loop_row_list point_rows])
-      (if (not (null? loop_row_list))
+  (let row-loop ([loop_row_list point_rows]
+                 [max_value 0]
+                 [min_value 765])
+    (if (not (null? loop_row_list))
+        (let col-loop ([loop_col_list (car loop_row_list)]
+                       [col_max_value max_value]
+                       [col_min_value min_value])
+          (if (not (null? loop_col_list))
+              (cond
+               [(>= (car loop_col_list) col_max_value)
+                (col-loop (cdr loop_col_list) (car loop_col_list) col_min_value)]
+               [(< (car loop_col_list) col_min_value)
+                (col-loop (cdr loop_col_list) col_max_value (car loop_col_list))]
+               [else
+                (col-loop (cdr loop_col_list) col_max_value col_min_value)]
+               )
+              (row-loop (cdr loop_row_list) col_max_value col_min_value)))
           (begin
-            (let col-loop ([loop_col_list (car loop_row_list)])
-              (when (not (null? loop_col_list))
-                    (cond
-                     [(> (car loop_col_list) max_value)
-                      (set! max_value (car loop_col_list))]
-                     [(< (car loop_col_list) min_value)
-                      (set! min_value (car loop_col_list))]
-                     )
-                    (col-loop (cdr loop_col_list))))
-            (row-loop (cdr loop_row_list)))
-          (floor (/ (- max_value min_value) 2))))))
+            (printf "min:~a, max:~a\n" min_value max_value)
+            (floor (/ (- max_value min_value) 2))))))
 
 (define (points->bw points_list threshold)
   (map
@@ -327,7 +367,7 @@
                    ""
                    0
                    #f)))
-            ""))))
+            #f))))
 
 (define (read-ean13 pic_path)
    (let (
@@ -337,5 +377,9 @@
          )
      (set! step1_points_list (pic->points pic_path))
      (set! step2_threshold (find-threshold step1_points_list))
+     (printf "threshold:~a\n" step2_threshold)
      (set! step3_bw_points (points->bw step1_points_list step2_threshold))
-     (search-barcode step3_bw_points)))
+     (let ([search_result (search-barcode step3_bw_points)])
+       (if search_result
+           (bar->string search_result)
+           ""))))
