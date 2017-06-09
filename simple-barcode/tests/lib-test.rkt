@@ -232,6 +232,8 @@
     
     (dynamic-wind
         (lambda ()
+          (check-exn exn:fail? (lambda () (draw-ean13 "1234567890123" ean13_write_test1)))
+          (check-exn exn:fail? (lambda () (draw-ean13 "12345678901a2" ean13_write_test1)))
           (draw-ean13 "750103131130" ean13_write_test1)
           )
         (lambda ()

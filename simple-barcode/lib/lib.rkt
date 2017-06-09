@@ -170,13 +170,16 @@
           (send dc draw-rectangle 0 0 width height))))
 
 (define (draw-ean13 ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (draw-ean13-raw 
-   (string-append
-    ean13
-    (number->string (ean13-checksum ean13)))
-   file_name
-   #:color_pair color_pair
-   #:brick_width brick_width))
+  (if (regexp-match #px"^[0-9]{12}$" ean13)
+      (draw-ean13-raw 
+       (string-append
+        ean13
+        (number->string (ean13-checksum ean13)))
+       file_name
+       #:color_pair color_pair
+       #:brick_width brick_width)
+      (error
+       "invalid ean13 string: length is 12, only digit")))
 
 (define (draw-ean13-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([front_color (car color_pair)]
