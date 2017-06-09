@@ -1,6 +1,7 @@
 #lang scribble/manual
 
 @(require (for-label racket))
+@(require (for-label simple-barcode))
 
 @title{Simple-Barcode: Barcode reader and writer}
 
@@ -18,9 +19,6 @@ raco pkg install simple-barcode
 
 select a type, size, color, then write a string to barcode.
 
-@defmodule[simple-barcode]
-@(require (for-label simple-barcode))
-
 there is also a complete read and write example on github:@link["https://github.com/simmone/racket-simple-barcode/blob/master/simple-barcode/example/example.rkt"]{includedin the source}.
 
 @defproc[(barcode-write
@@ -30,6 +28,18 @@ there is also a complete read and write example on github:@link["https://github.
               [#:color_pair color_pair pair? '("black" . "white")]
               [#:brick_width brick_width exact-nonnegative-integer? 2])
             boolean?]{
+code is a 12 digit string            
+}
+
+@section{Read}
+
+read ean13 code from a picture file.
+
+@defproc[(barcode-read
+              [barcode_file_path path-string?]
+              [#:code_type code_type symbol? 'ean13]
+              )
+            string?]{
 }
 
 @section{Complete Example}
@@ -55,5 +65,4 @@ there is also a complete read and write example on github:@link["https://github.
   (barcode-read "barcode_ean13_color.png")
 
   (barcode-read "barcode_ean13_trans.png"))
-
 }
