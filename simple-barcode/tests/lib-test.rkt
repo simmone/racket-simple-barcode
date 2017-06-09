@@ -15,7 +15,6 @@
 (define-runtime-path ean13_test1 "ean13_test1.png")
 
 (define-runtime-path ean13_write_test1 "ean13_write_test1.png")
-(define-runtime-path ean13_write_test2 "ean13_write_test2.png")
 
 (define test-lib
   (test-suite
@@ -233,8 +232,14 @@
     
     (dynamic-wind
         (lambda ()
-          (draw-ean13 "750103131130" ean13_write_test1
-          
+          (draw-ean13 "750103131130" ean13_write_test1)
+          )
+        (lambda ()
+          (check-equal? (read-ean13 ean13_write_test1) "7501031311309")
+          )
+        (lambda ()
+          (delete-file ean13_write_test1)
+          )))
    ))
 
 (run-tests test-lib)
