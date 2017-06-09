@@ -7,6 +7,7 @@
           [ean13->bar_group (-> string? (listof pair?))]
           [get-dimension (-> exact-nonnegative-integer? pair?)]
           [draw-ean13 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
+          [draw-ean13-raw (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [pic->points (-> path-string? (listof list?))]
           [find-threshold (-> list? exact-nonnegative-integer?)]
           [search-barcode-on-row (-> list? (or/c exact-nonnegative-integer? #f) (or/c list? #f))]
@@ -169,6 +170,15 @@
           (send dc draw-rectangle 0 0 width height))))
 
 (define (draw-ean13 ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+  (draw-ean13-raw 
+   (string-append
+    ean13
+    (number->string (ean13-checksum ean13)))
+   file_name
+   #:color_pair color_pair
+   #:brick_width brick_width))
+
+(define (draw-ean13-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([front_color (car color_pair)]
          [back_color (cdr color_pair)]
          [dimension (get-dimension brick_width)]
