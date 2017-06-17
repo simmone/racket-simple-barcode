@@ -19,3 +19,6 @@
 
   (barcode-read "barcode_ean13_trans.png"))
 
+(barcode-write "chenxiao770117" "barcode_code128.png" #:code_type 'code128)
+(printf "~a\n" (barcode-read "barcode_code128.png"))
+
