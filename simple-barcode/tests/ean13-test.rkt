@@ -4,7 +4,7 @@
 (require racket/date)
 (require racket/draw)
 
-(require rackunit "../lib/lib.rkt")
+(require rackunit "../lib/ean13-lib.rkt")
 
 (require racket/runtime-path)
 (define-runtime-path ean13_file "../example/barcode_ean13.png")
