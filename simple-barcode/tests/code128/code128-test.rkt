@@ -26,6 +26,13 @@
       (check-equal? (hash-ref code_a_bar_char_map "11011001100") #\u0020)
       ))
    
+   (test-case
+    "test-encode-c128"
+    
+    (check-equal? (encode-c128 "chenxiao") '("StartB" #\c #\h #\e #\n #\x #\i #\a #\o "Stop"))
+    
+    )
+   
    ))
 
 (run-tests test-lib)

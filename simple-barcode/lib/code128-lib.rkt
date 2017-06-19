@@ -2,6 +2,7 @@
 
 (provide (contract-out
           [get-code128-map (-> #:type symbol? #:code symbol? hash?)]
+          [encode-c128 (-> string? list?)]
           ))
 
 (require racket/draw)
@@ -137,3 +138,11 @@
          (hash-set! result_map ch (list-ref rec 0))])))
      *code_list*)
     result_map))
+
+(define (encode-c128 content)
+  (let ([code_b_char_bar_map (get-code128-map 'B 'char->bar)]
+        [code_a_char_bar_map (get-code128-map 'A 'char->bar)]
+        [code_c_char_bar_map (get-code128-map 'C 'char->bar)])
+    (let loop ([loop_list (string->list content)]
+               [result_list '()])
+      (if (not (null?
