@@ -140,9 +140,71 @@
     result_map))
 
 (define (encode-c128 content)
-  (let ([code_b_char_bar_map (get-code128-map 'B 'char->bar)]
-        [code_a_char_bar_map (get-code128-map 'A 'char->bar)]
-        [code_c_char_bar_map (get-code128-map 'C 'char->bar)])
+  (let ([code_b_char_bar_map (get-code128-map #:code 'B #:type 'char->bar)]
+        [code_a_char_bar_map (get-code128-map #:code 'A #:type 'char->bar)]
+        [code_c_char_bar_map (get-code128-map #:code 'C #:type 'char->bar)])
     (let loop ([loop_list (string->list content)]
+               [current_mode #f]
                [result_list '()])
-      (if (not (null?
+      (if (not (null? loop_list))
+          (cond
+           [(regexp-match #px"^[0-9]{4}" (list->string loop_list))
+            (if (eq? current_mode 'C)
+                (loop
+                 (list-tail loop_list 4)
+                 'C
+                 (cons 
+                  (substring (list->string loop_list) 2 4)
+                  (cons
+                   (substring (list->string loop_list) 0 2)
+                   result_list)))
+                (loop
+                 (list-tail loop_list 4)
+                 'C
+                 (cons 
+                  (substring (list->string loop_list) 2 4)
+                  (cons
+                   (substring (list->string loop_list) 0 2)
+                   (cons "StartC" result_list)))))]
+           [(and
+             (eq? current_mode 'C)
+             (regexp-match #px"^[0-9]{2}" (list->string loop_list)))
+            (loop
+             (list-tail loop_list 2)
+             'C
+             (cons 
+              (substring (list->string loop_list) 0 2)
+              result_list))]
+           [(or
+             (hash-has-key? code_a_char_bar_map (car loop_list))
+             (hash-has-key? code_b_char_bar_map (car loop_list)))
+            (cond 
+             [(and (eq? current_mode 'A)
+                   (hash-has-key? code_a_char_bar_map (car loop_list)))
+              (loop
+               (cdr loop_list)
+               'A
+               (cons (car loop_list) result_list))]
+             [(and (eq? current_mode 'B)
+                   (hash-has-key? code_b_char_bar_map (car loop_list)))
+              (loop
+               (cdr loop_list)
+               'B
+               (cons (car loop_list) result_list))]
+             [(and (not (eq? current_mode 'B))
+                   (hash-has-key? code_b_char_bar_map (car loop_list)))
+              (loop
+               (cdr loop_list)
+               'B
+               (cons (car loop_list) 
+                     (cons "StartB" result_list)))]
+             [(and (not (eq? current_mode 'A))
+                   (hash-has-key? code_a_char_bar_map (car loop_list)))
+              (loop
+               (cdr loop_list)
+               'A
+               (cons (car loop_list) 
+                     (cons "StartA" result_list)))])]
+           [else
+            (error (format "invalid char[~a]" (car loop_list)))])
+          (reverse (cons "Stop" result_list))))))
