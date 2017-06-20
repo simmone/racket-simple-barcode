@@ -3,6 +3,7 @@
 (provide (contract-out
           [get-code128-map (-> #:type symbol? #:code symbol? hash?)]
           [encode-c128 (-> string? list?)]
+          [code->value (-> list? list?)]
           ))
 
 (require racket/draw)
@@ -105,17 +106,17 @@
     (93     #\u001D      #\u007D     "93"     "10100011110")
     (94     #\u001E      #\u007E     "94"     "10001011110")
     (95     #\u001F      #\u007F     "95"     "10111101000")
-    (96     "FNC3"      "FNC3"     "96"     "10111100010")
-    (97     "FNC2"      "FNC2"     "97"     "11110101000")
-    (98     "ShiftB"    "ShiftB"   "98"     "11110100010")
-    (99     "CodeC"     "CodeC"    "99"     "10111011110")
-    (100    "CodeB"     "FNC4"     "CodeB"  "10111101110")
-    (101    "FNC4"      "CodeA"    "CodeA"  "11101011110")
-    (102    "FNC1"      "FNC1"     "FNC1"   "11110101110")
-    (103    "StartA"    "StartA"   "StartA" "11010000100")
-    (104    "StartB"    "StartB"   "StartB" "11010010000")
-    (105    "StartC"    "StartC"   "StartC" "11010011100")
-    (106    "Stop"      "Stop"     "Stop"   "1100011101011")))
+    (96     "FNC3"      "FNC3"       "96"     "10111100010")
+    (97     "FNC2"      "FNC2"       "97"     "11110101000")
+    (98     "ShiftB"    "ShiftA"     "98"     "11110100010")
+    (99     "CodeC"     "CodeC"      "99"     "10111011110")
+    (100    "CodeB"     "FNC4"       "CodeB"  "10111101110")
+    (101    "FNC4"      "CodeA"      "CodeA"  "11101011110")
+    (102    "FNC1"      "FNC1"       "FNC1"   "11110101110")
+    (103    "StartA"    "StartA"     "StartA" "11010000100")
+    (104    "StartB"    "StartB"     "StartB" "11010010000")
+    (105    "StartC"    "StartC"     "StartC" "11010011100")
+    (106    "Stop"      "Stop"       "Stop"   "1100011101011")))
 
 (define (get-code128-map #:type type #:code code)
   (let ([result_map (make-hash)])
@@ -208,3 +209,41 @@
            [else
             (error (format "invalid char[~a]" (car loop_list)))])
           (reverse (cons "Stop" result_list))))))
+
+(define (code->value code_list)
+  (let ([a_map (get-code128-map #:code 'A #:type 'char->weight)]
+        [b_map (get-code128-map #:code 'B #:type 'char->weight)]
+        [c_map (get-code128-map #:code 'C #:type 'char->weight)])
+    (let loop ([loop_list code_list]
+               [current_map #f]
+               [result_list '()])
+      (if (not (null? loop_list))
+          (if (string? (car loop_list))
+              (cond
+               [(or (string=? (car loop_list) "StartA") (string=? (car loop_list) "CodeA"))
+                (loop (cdr loop_list) a_map (cons (hash-ref a_map (car loop_list)) result_list))]
+               [(or (string=? (car loop_list) "StartB") (string=? (car loop_list) "CodeB"))
+                (loop (cdr loop_list) b_map (cons (hash-ref b_map (car loop_list)) result_list))]
+               [(or (string=? (car loop_list) "StartC") (string=? (car loop_list) "CodeC"))
+                (loop (cdr loop_list) c_map (cons (hash-ref c_map (car loop_list)) result_list))]
+               [(string=? (car loop_list) "ShiftA")
+                (loop (cddr loop_list) 
+                      current_map
+                      (cons
+                       (hash-ref a_map (cadr loop_list))
+                       (cons (hash-ref b_map (car loop_list)) result_list)))]
+               [(string=? (car loop_list) "ShiftB")
+                (loop (cddr loop_list) 
+                      current_map
+                      (cons
+                       (hash-ref b_map (cadr loop_list))
+                       (cons (hash-ref a_map (car loop_list)) result_list)))]
+               [(string=? (car loop_list) "Stop")
+                (reverse result_list)])
+              (loop (cdr loop_list) current_map (cons (hash-ref current_map (car loop_list)) result_list)))
+          (reverse result_list)))))
+
+
+                      
+
+                 

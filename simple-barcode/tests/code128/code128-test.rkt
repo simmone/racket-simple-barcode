@@ -32,16 +32,23 @@
     
     (check-equal? (encode-c128 "chenxiao") '("StartB" #\c #\h #\e #\n #\x #\i #\a #\o "Stop"))
     (check-equal? (encode-c128 "\u0011CHENXIAO") '("StartA" #\u0011 #\C #\H #\E #\N #\X #\I #\A #\O "Stop"))
-    (check-equal? (encode-c128 "\u0011CHEnxIAO") '("StartA" #\u0011 #\C #\H #\E "StartB" #\n #\x #\I #\A #\O "Stop"))
-    (check-equal? (encode-c128 "chen\u0011xiao") '("StartB" #\c #\h #\e #\n "StartA" #\u0011 "StartB" #\x #\i #\a #\o "Stop"))
+    (check-equal? (encode-c128 "\u0011CHEnxIAO") '("StartA" #\u0011 #\C #\H #\E "CodeB" #\n #\x #\I #\A #\O "Stop"))
+    (check-equal? (encode-c128 "chen\u0011xiao") '("StartB" #\c #\h #\e #\n "CodeA" #\u0011 "CodeB" #\x #\i #\a #\o "Stop"))
 
     (check-equal? (encode-c128 "chen123x") '("StartB" #\c #\h #\e #\n #\1 #\2 #\3 #\x "Stop"))
-    (check-equal? (encode-c128 "chen1234x") '("StartB" #\c #\h #\e #\n "StartC" "12" "34" "StartB" #\x "Stop"))
-    (check-equal? (encode-c128 "chen12345x") '("StartB" #\c #\h #\e #\n "StartC" "12" "34" "StartB" #\5 #\x "Stop"))
-    (check-equal? (encode-c128 "chen123456x") '("StartB" #\c #\h #\e #\n "StartC" "12" "34" "56" "StartB" #\x "Stop"))
-    (check-equal? (encode-c128 "chen1234567x") '("StartB" #\c #\h #\e #\n "StartC" "12" "34" "56" "StartB" #\7 #\x "Stop"))
-    (check-equal? (encode-c128 "chen12345678x") '("StartB" #\c #\h #\e #\n "StartC" "12" "34" "56" "78" "StartB" #\x "Stop"))
-    (check-equal? (encode-c128 "chen123456789x") '("StartB" #\c #\h #\e #\n "StartC" "12" "34" "56" "78" "StartB" #\9 #\x "Stop"))
+    (check-equal? (encode-c128 "chen1234x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "CodeB" #\x "Stop"))
+    (check-equal? (encode-c128 "chen12345x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "CodeB" #\5 #\x "Stop"))
+    (check-equal? (encode-c128 "chen123456x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "56" "CodeB" #\x "Stop"))
+    (check-equal? (encode-c128 "chen1234567x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "56" "CodeB" #\7 #\x "Stop"))
+    (check-equal? (encode-c128 "chen12345678x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "56" "78" "CodeB" #\x "Stop"))
+    (check-equal? (encode-c128 "chen123456789x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "56" "78" "CodeB" #\9 #\x "Stop"))
+    )
+   
+   (test-case
+    "test-code->value"
+    
+    (check-equal? (code->value '("StartA" #\P #\J #\J #\1 #\2 #\3 #\C "Stop")) '(103 48 42 42 17 18 19 35))
+    
     )
    
    ))
