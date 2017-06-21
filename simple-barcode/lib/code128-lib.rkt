@@ -4,6 +4,7 @@
           [get-code128-map (-> #:type symbol? #:code symbol? hash?)]
           [encode-c128 (-> string? list?)]
           [code->value (-> list? list?)]
+          [shift-compress (-> list? list?)]
           ))
 
 (require racket/draw)
@@ -108,7 +109,7 @@
     (95     #\u001F      #\u007F     "95"     "10111101000")
     (96     "FNC3"      "FNC3"       "96"     "10111100010")
     (97     "FNC2"      "FNC2"       "97"     "11110101000")
-    (98     "ShiftB"    "ShiftA"     "98"     "11110100010")
+    (98     "Shift"     "Shift"      "98"     "11110100010")
     (99     "CodeC"     "CodeC"      "99"     "10111011110")
     (100    "CodeB"     "FNC4"       "CodeB"  "10111101110")
     (101    "FNC4"      "CodeA"      "CodeA"  "11101011110")
@@ -149,6 +150,24 @@
                [result_list '()])
       (if (not (null? loop_list))
           (cond
+           [(and (not current_mode) (hash-has-key? code_a_char_bar_map (car loop_list)))
+            (loop (cdr loop_list) 'A 
+                  (cons
+                   (car loop_list)
+                   (cons "StartA" result_list)))]
+           [(and (not current_mode) (hash-has-key? code_b_char_bar_map (car loop_list)))
+            (loop (cdr loop_list) 'B (cons 
+                                      (car loop_list)
+                                      (cons "StartB" result_list)))]
+           [(and (not current_mode) (regexp-match #px"^[0-9]{4}" (list->string loop_list)))
+            (loop
+             (list-tail loop_list 4)
+             'C
+             (cons 
+              (substring (list->string loop_list) 2 4)
+              (cons
+               (substring (list->string loop_list) 0 2)
+               (cons "StartC" result_list))))]
            [(regexp-match #px"^[0-9]{4}" (list->string loop_list))
             (if (eq? current_mode 'C)
                 (loop
@@ -166,7 +185,7 @@
                   (substring (list->string loop_list) 2 4)
                   (cons
                    (substring (list->string loop_list) 0 2)
-                   (cons "StartC" result_list)))))]
+                   (cons "CodeC" result_list)))))]
            [(and
              (eq? current_mode 'C)
              (regexp-match #px"^[0-9]{2}" (list->string loop_list)))
@@ -198,17 +217,73 @@
                (cdr loop_list)
                'B
                (cons (car loop_list) 
-                     (cons "StartB" result_list)))]
+                     (cons "CodeB" result_list)))]
              [(and (not (eq? current_mode 'A))
                    (hash-has-key? code_a_char_bar_map (car loop_list)))
               (loop
                (cdr loop_list)
                'A
                (cons (car loop_list) 
-                     (cons "StartA" result_list)))])]
+                     (cons "CodeA" result_list)))])]
            [else
             (error (format "invalid char[~a]" (car loop_list)))])
           (reverse (cons "Stop" result_list))))))
+
+(define (shift-compress code_list)
+  (let loop ([loop_list code_list]
+             [current_mode #f]
+             [result_list '()])
+    (if (not (null? loop_list))
+        (if (string? (car loop_list))
+            (cond
+             [(string=? (car loop_list) "StartA")
+              (loop (cdr loop_list) 'A (cons "StartA" result_list))]
+             [(string=? (car loop_list) "StartB")
+              (loop (cdr loop_list) 'B (cons "StartB" result_list))]
+             [(string=? (car loop_list) "StartC")
+              (loop (cdr loop_list) 'C (cons "StartC" result_list))]
+             [(string=? (car loop_list) "CodeA")
+              (loop (cdr loop_list) 'A (cons "CodeA" result_list))]
+             [(string=? (car loop_list) "CodeB")
+              (loop (cdr loop_list) 'B (cons "CodeB" result_list))]
+             [(string=? (car loop_list) "CodeC")
+              (loop (cdr loop_list) 'C (cons "CodeC" result_list))]
+             [(string=? (car loop_list) "Stop")
+              (reverse (cons "Stop" result_list))]
+             [else
+              (loop (cdr loop_list) 'C (cons (car loop_list) result_list))])
+            (cond
+             [(and
+               (eq? current_mode 'A)
+               (>= (length loop_list) 5)
+               (string? (list-ref loop_list 1)) (string=? (list-ref loop_list 1) "CodeB")
+               (string? (list-ref loop_list 3)) (string=? (list-ref loop_list 3) "CodeA"))
+              (loop
+               (list-tail loop_list 4)
+               current_mode
+               (cons
+                (list-ref loop_list 2)
+                (cons
+                 "Shift"
+                 (cons (car loop_list) result_list))))]
+             [(and
+               (eq? current_mode 'B)
+               (>= (length loop_list) 5)
+               (string? (list-ref loop_list 1)) (string=? (list-ref loop_list 1) "CodeA")
+               (string? (list-ref loop_list 3)) (string=? (list-ref loop_list 3) "CodeB"))
+              (loop
+               (list-tail loop_list 4)
+               current_mode
+               (cons
+                (list-ref loop_list 2)
+                (cons
+                 "Shift"
+                 (cons
+                  (car loop_list) result_list))))]
+             [else
+              (loop (cdr loop_list) current_mode (cons (car loop_list) result_list))]))
+        (reverse result_list))))
+
 
 (define (code->value code_list)
   (let ([a_map (get-code128-map #:code 'A #:type 'char->weight)]

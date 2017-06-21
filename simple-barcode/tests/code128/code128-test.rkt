@@ -26,6 +26,38 @@
       (check-equal? (hash-ref code_a_char_weight_map #\u0011) 81)
       (check-equal? (hash-ref code_a_bar_char_map "11011001100") #\u0020)
       ))
+
+   (test-case
+    "test-shift-compress"
+    
+    (check-equal? (shift-compress 
+                   '("StartA" #\u0011 "CodeB" #\a "CodeA" #\u0011)) 
+                   '("StartA" #\u0011 "Shift" #\a #\u0011))
+
+    (check-equal? (shift-compress 
+                   '("StartB" #\a "CodeA" #\u0011 "CodeB" #\a "CodeA" #\u0011 "CodeB" #\a))
+                   '("StartB" #\a "Shift" #\u0011 #\a "Shift" #\u0011 #\a))
+
+    (check-equal? (shift-compress 
+                   '("StartB" #\a "CodeA" #\u0011 "CodeB" #\a "CodeA" #\u0011 "CodeB" #\a "CodeA" #\u0011 "CodeB" #\a))
+                   '("StartB" #\a "Shift" #\u0011 #\a "Shift" #\u0011 #\a "Shift" #\u0011 #\a))
+
+    (check-equal? (shift-compress 
+                   '("StartB" #\a "CodeA" #\u0011 "CodeC" "01" "CodeA" #\u0011 "CodeC" "02" "04" "CodeB" #\a))
+                   '("StartB" #\a "CodeA" #\u0011 "CodeC" "01" "CodeA" #\u0011 "CodeC" "02" "04" "CodeB" #\a))
+
+    (check-equal? (shift-compress 
+                   '("StartB" #\a "CodeA" #\u0011 "CodeC" "01" "CodeA" #\u0011 "CodeB" #\a "CodeA" #\u0011 "CodeC" "02" "04"    "CodeB" #\a))
+                   '("StartB" #\a "CodeA" #\u0011 "CodeC" "01" "CodeA" #\u0011 "Shift" #\a #\u0011 "CodeC"  "02"   "04" "CodeB" #\a))
+
+    (check-equal? (shift-compress 
+                   '("StartB" #\a "CodeA"  #\u0011 "CodeB" #\a #\b      "CodeA" #\u0011 "CodeB" #\a))
+                   '("StartB" #\a "Shift" #\u0011 #\a     #\b "Shift" #\u0011 #\a))
+
+    (check-equal? (shift-compress 
+                   '("StartB" #\a "CodeA"  #\u0011 #\u0011 "CodeB" #\a #\b))
+                   '("StartB" #\a "CodeA"  #\u0011 #\u0011 "CodeB" #\a #\b))
+    )
    
    (test-case
     "test-encode-c128"
@@ -48,7 +80,6 @@
     "test-code->value"
     
     (check-equal? (code->value '("StartA" #\P #\J #\J #\1 #\2 #\3 #\C "Stop")) '(103 48 42 42 17 18 19 35))
-    
     )
    
    ))
