@@ -5,6 +5,8 @@
           [encode-c128 (-> string? list?)]
           [code->value (-> list? list?)]
           [shift-compress (-> list? list?)]
+          [code128-checksum (-> (listof exact-nonnegative-integer?) exact-nonnegative-integer?)]
+          [code128->bar_group (-> string? (listof string?))]
           ))
 
 (require racket/draw)
@@ -284,41 +286,62 @@
               (loop (cdr loop_list) current_mode (cons (car loop_list) result_list))]))
         (reverse result_list))))
 
-
 (define (code->value code_list)
-  (let ([a_map (get-code128-map #:code 'A #:type 'char->weight)]
-        [b_map (get-code128-map #:code 'B #:type 'char->weight)]
-        [c_map (get-code128-map #:code 'C #:type 'char->weight)])
+  (let* ([a_map (get-code128-map #:code 'A #:type 'char->weight)]
+         [b_map (get-code128-map #:code 'B #:type 'char->weight)]
+         [c_map (get-code128-map #:code 'C #:type 'char->weight)]
+         [mode_map (hash 'A a_map 'B b_map 'C c_map)])
     (let loop ([loop_list code_list]
-               [current_map #f]
+               [current_mode #f]
                [result_list '()])
       (if (not (null? loop_list))
           (if (string? (car loop_list))
               (cond
-               [(or (string=? (car loop_list) "StartA") (string=? (car loop_list) "CodeA"))
-                (loop (cdr loop_list) a_map (cons (hash-ref a_map (car loop_list)) result_list))]
-               [(or (string=? (car loop_list) "StartB") (string=? (car loop_list) "CodeB"))
-                (loop (cdr loop_list) b_map (cons (hash-ref b_map (car loop_list)) result_list))]
-               [(or (string=? (car loop_list) "StartC") (string=? (car loop_list) "CodeC"))
-                (loop (cdr loop_list) c_map (cons (hash-ref c_map (car loop_list)) result_list))]
-               [(string=? (car loop_list) "ShiftA")
-                (loop (cddr loop_list) 
-                      current_map
-                      (cons
-                       (hash-ref a_map (cadr loop_list))
-                       (cons (hash-ref b_map (car loop_list)) result_list)))]
-               [(string=? (car loop_list) "ShiftB")
-                (loop (cddr loop_list) 
-                      current_map
+               [(string=? (car loop_list) "StartA")
+                (loop (cdr loop_list) 'A (cons 103 result_list))]
+               [(string=? (car loop_list) "StartB")
+                (loop (cdr loop_list) 'B (cons 104 result_list))]
+               [(string=? (car loop_list) "StartC")
+                (loop (cdr loop_list) 'C (cons 105 result_list))]
+               [(string=? (car loop_list) "CodeA")
+                (loop (cdr loop_list) 'A (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
+               [(string=? (car loop_list) "CodeB")
+                (loop (cdr loop_list) 'B (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
+               [(string=? (car loop_list) "CodeC")
+                (loop (cdr loop_list) 'C (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
+               [(and (eq? current_mode 'A) (string=? (car loop_list) "Shift"))
+                (loop (cddr loop_list)
+                      current_mode
                       (cons
                        (hash-ref b_map (cadr loop_list))
-                       (cons (hash-ref a_map (car loop_list)) result_list)))]
+                       (cons 98 result_list)))]
+               [(and (eq? current_mode 'B) (string=? (car loop_list) "Shift"))
+                (loop (cddr loop_list)
+                      current_mode
+                      (cons
+                       (hash-ref a_map (cadr loop_list))
+                       (cons 98 result_list)))]
                [(string=? (car loop_list) "Stop")
-                (reverse result_list)])
-              (loop (cdr loop_list) current_map (cons (hash-ref current_map (car loop_list)) result_list)))
+                (reverse result_list)]
+               [else
+                (loop (cdr loop_list) current_mode (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))])
+              (loop (cdr loop_list) current_mode (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list)))
           (reverse result_list)))))
 
+(define (code128-checksum value_list)
+  (modulo
+   (+
+    (car value_list)
+    (let loop ([loop_list (cdr value_list)]
+               [index 1]
+               [sum 0])
+      (if (not (null? loop_list))
+          (loop
+           (cdr loop_list)
+           (add1 index)
+           (+ sum (* (car loop_list) index)))
+          sum)))
+   103))
 
-                      
-
-                 
+(define (code128->bar_group content)
+  '())

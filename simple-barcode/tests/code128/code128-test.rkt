@@ -74,12 +74,39 @@
     (check-equal? (encode-c128 "chen1234567x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "56" "CodeB" #\7 #\x "Stop"))
     (check-equal? (encode-c128 "chen12345678x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "56" "78" "CodeB" #\x "Stop"))
     (check-equal? (encode-c128 "chen123456789x") '("StartB" #\c #\h #\e #\n "CodeC" "12" "34" "56" "78" "CodeB" #\9 #\x "Stop"))
+
+    (check-equal? (encode-c128 "\u00111234abc") '("StartA" #\u0011 "CodeC" "12" "34" "CodeB" #\a #\b #\c "Stop"))
+
+    (check-equal? (encode-c128 "PJJ123C") '("StartA" #\P #\J #\J #\1 #\2 #\3 #\C "Stop"))
     )
    
    (test-case
     "test-code->value"
     
     (check-equal? (code->value '("StartA" #\P #\J #\J #\1 #\2 #\3 #\C "Stop")) '(103 48 42 42 17 18 19 35))
+    (check-equal? (code->value '("StartA" #\u0011 "CodeC" "12" "34" "CodeB" #\a #\b #\c "Stop")) '(103 81 99 12 34 100 65 66 67))
+
+    )
+   
+   (test-case
+    "test-code128-checksum"
+    
+    (check-equal? (code128-checksum '(103 48 42 42 17 18 19 35)) 54)
+    (check-equal? (code128-checksum (code->value (encode-c128 "\u00111234abc"))) 73)
+
+    )
+   
+   (test-case
+    "test-code128->bar_group"
+    
+    (check-equal? (code128->bar_group 
+                   "\u00111234abc")
+                  '(
+                    "11010000100" "10010111100"
+                    "11010011100" "10110011100" "10001011000"
+                    "10111101110" "10010110000" "10010000110" "10000101100"
+                    "10000101100" "10000110100"
+                    "1100011101011"))
     )
    
    ))
