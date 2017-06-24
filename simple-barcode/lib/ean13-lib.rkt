@@ -142,13 +142,13 @@
      (cons (string (list-ref char_list 12)) (char->barstring (list-ref char_list 12) 'right))
      '("$" . "202"))))
 
-(define *quiet_zone_width* 10)
-(define *bar_height* 60)
 (define *foot_height* 7)
 (define *font_size* 5)
+
+(define *quiet_zone_width* 10)
+(define *bar_height* 60)
 (define *top_margin* 10)
 (define *down_margin* 20)
-(define *guard_width* 3)
 
 (define (get-dimension brick_width)
   (cons

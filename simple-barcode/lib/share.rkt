@@ -9,9 +9,15 @@
           [points->bw (-> list? exact-nonnegative-integer? list?)]
           [squash-points (-> list? exact-nonnegative-integer? pair?)]
           [guess-first-dark-width (-> list? exact-nonnegative-integer?)]
+          [draw-bars (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           ))
 
 (require racket/draw)
+
+(define *quiet_zone_width* 10)
+(define *bar_height* 60)
+(define *top_margin* 10)
+(define *down_margin* 20)
 
 (define (set-color dc color)
   (when (not (string=? color "transparent"))
@@ -141,7 +147,7 @@
             (loop (cdr points_loop) (add1 dark_length)))
         dark_length)))
 
-(define (draw-ean13-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+(define (draw-bars bars file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([front_color (car color_pair)]
          [back_color (cdr color_pair)]
          [dimension (get-dimension brick_width)]
