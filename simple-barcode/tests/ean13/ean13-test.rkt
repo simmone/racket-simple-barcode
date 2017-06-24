@@ -75,16 +75,6 @@
     )
 
    (test-case
-    "test-find-threshold"
-    
-    (let ([points_list (pic->points ean13_file)])
-      (check-equal? (length points_list) 180)
-      (check-equal? (length (car points_list)) 236)
-
-      (check-equal? (find-threshold points_list) 382)
-    ))
-
-   (test-case
     "test-search-barcode-on-row"
     
     (let ([points_row_false1 '(1 0)]

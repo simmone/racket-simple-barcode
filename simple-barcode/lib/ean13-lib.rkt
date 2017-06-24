@@ -16,7 +16,7 @@
           [get-bar-char-map (-> hash?)]
           ))
 
-(require racket/draw)
+(require "share.rkt")
 
 (define (ean13-checksum barcode)
   (let-values ([
