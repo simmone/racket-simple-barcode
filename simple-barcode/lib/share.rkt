@@ -34,13 +34,13 @@
          [target (make-bitmap width height)]
          [dc (new bitmap-dc% [bitmap target])])
 
-    (set-color dc front_color)
-    (send dc set-text-foreground front_color)
-    (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
-
     (when (not (string=? back_color "transparent"))
           (set-color dc back_color)
           (send dc draw-rectangle 0 0 width height))
+
+    (set-color dc front_color)
+    (send dc set-text-foreground front_color)
+    (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
     dc))
 
 (define (save-bars dc file_name)
@@ -51,7 +51,6 @@
              [loop_x x])
     (when (not (null? loop_list))
           (when (char=? (car loop_list) #\1)
-                (printf "~a,~a,~a,~a\n" loop_x y bar_width bar_height)
                 (send dc draw-rectangle loop_x y bar_width bar_height))
           (loop (cdr loop_list) (+ loop_x bar_width)))))
 
