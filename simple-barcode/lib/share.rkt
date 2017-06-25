@@ -2,14 +2,14 @@
 
 (provide (contract-out
           [set-color (-> (is-a?/c bitmap-dc%) (or/c (is-a?/c color%) string?) void?)]
-          [draw-background (-> (is-a?/c bitmap-dc%) (or/c (is-a?/c color%) string?) exact-nonnegative-integer? void?)]
           [pic->points (-> path-string? (listof list?))]
           [points->pic (-> (listof list?) path-string? hash? any)]
           [find-threshold (-> list? exact-nonnegative-integer?)]
           [points->bw (-> list? exact-nonnegative-integer? list?)]
           [squash-points (-> list? exact-nonnegative-integer? pair?)]
           [guess-first-dark-width (-> list? exact-nonnegative-integer?)]
-          [draw-bars (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
+          [init-draw (->* (exact-nonnegative-integer? exact-nonnegative-integer?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
+          [draw-bars (->* (is-a?/c bitmap-dc%) string? void?)]
           ))
 
 (require racket/draw)
@@ -19,17 +19,12 @@
 (define *top_margin* 10)
 (define *down_margin* 20)
 
-(define (draw-bars bars #:width width #:height height #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (let* ([front_color (car color_pair)]
-         [back_color (cdr color_pair)]
-         [x (* (add1 *quiet_zone_width*) brick_width)]
+(define (draw-bars dc bars)
+  (let* ([x (* (add1 *quiet_zone_width*) brick_width)]
          [y (* (add1 *top_margin*) brick_width)]
          [bar_height (* brick_width *bar_height*)]
          [target (make-bitmap width height)]
          [dc (new bitmap-dc% [bitmap target])])
-
-    (draw-background dc back_color brick_width)
-    (set-color dc front_color)
 
     (let loop-bar ([loop_list (string->list bars)]
                    [loop_x start_x])
@@ -40,19 +35,30 @@
             (loop-bar (cdr loop_list) (+ loop_x brick_width))))
     dc))
 
+(define (draw-init width height #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+  (let* ([front_color (car color_pair)]
+         [back_color (cdr color_pair)]
+         [x (* (add1 *quiet_zone_width*) brick_width)]
+         [y (* (add1 *top_margin*) brick_width)]
+         [bar_height (* brick_width *bar_height*)]
+         [target (make-bitmap width height)]
+         [dc (new bitmap-dc% [bitmap target])])
+
+    (set-color dc front_color)
+    (send dc set-text-foreground front_color)
+    (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
+
+    (when (not (string=? color "transparent"))
+          (set-color dc color)
+          (let* ([width (car dimension)]
+                 [height (cdr dimension)])
+            (send dc draw-rectangle 0 0 width height)))))
+
 (define (set-color dc color)
   (when (not (string=? color "transparent"))
         (send dc set-pen color 1 'solid))
 
   (send dc set-brush color 'solid))
-
-(define (draw-background dc color brick_width)
-  (when (not (string=? color "transparent"))
-        (set-color dc color)
-        (let* ([dimension (get-dimension brick_width)]
-               [width (car dimension)]
-               [height (cdr dimension)])
-          (send dc draw-rectangle 0 0 width height))))
 
 (define (bitmap->points img)
   (let* ([width (send img get-width)]
