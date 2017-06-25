@@ -4,7 +4,7 @@
 (require racket/date)
 (require racket/draw)
 
-(require rackunit "../lib/ean13-lib.rkt")
+(require rackunit "../../lib/ean13-lib.rkt")
 
 (require racket/runtime-path)
 (define-runtime-path ean13_file "../example/barcode_ean13.png")
@@ -224,13 +224,14 @@
         (lambda ()
           (check-exn exn:fail? (lambda () (draw-ean13 "1234567890123" ean13_write_test1)))
           (check-exn exn:fail? (lambda () (draw-ean13 "12345678901a2" ean13_write_test1)))
-          (draw-ean13 "750103131130" ean13_write_test1)
+          (draw-ean13 "750103131130" ean13_write_test1 #:color_pair '("white" . "black"))
           )
         (lambda ()
           (check-equal? (read-ean13 ean13_write_test1) "7501031311309")
           )
         (lambda ()
-          (delete-file ean13_write_test1)
+;          (delete-file ean13_write_test1)
+          (void)
           )))
    ))
 

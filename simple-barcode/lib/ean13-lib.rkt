@@ -14,6 +14,8 @@
           [get-bar-char-map (-> hash?)]
           ))
 
+(require racket/draw)
+
 (require "share.rkt")
 
 (define (ean13-checksum barcode)
@@ -141,7 +143,6 @@
      '("$" . "202"))))
 
 (define *foot_height* 7)
-(define *font_size* 5)
 
 (define (get-dimension brick_width)
   (cons
@@ -170,79 +171,61 @@
          [foot_height (* brick_width (+ *bar_height* *foot_height*))]
          [dc #f])
 
-    (set! dc (draw-init width height color_pair brick_width))
+    (set! dc (draw-init width height #:color_pair color_pair #:brick_width brick_width))
     
-    (let loop-group ([group_list (ean13->bar_group ean13)]
-                     [start_x x])
-      (when (not (null? group_list))
-            (let* ([group (car group_list)]
-                   [hold_str (car group)]
-                   [hold_bar (cdr group)])
-              
-              (let loop-bar ([loop_list (string->list hold_bar)]
-                             [loop_x start_x])
-                (when (not (null? loop_list))
-                      (cond
-                       [(char=? (car loop_list) #\1)
-                        (send dc draw-rectangle loop_x y brick_width bar_height)]
-                       [(char=? (car loop_list) #\2)
-                        (send dc draw-rectangle loop_x y brick_width foot_height)])
-
-                      (loop-bar (cdr loop_list) (+ loop_x brick_width))))
-              
-              (loop-group (cdr group_list) (+ start_x (* (string-length hold_bar) brick_width))))))
-
-    (send target save-file file_name 'png)))
-
-(define (draw-bak-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (let* ([front_color (car color_pair)]
-         [back_color (cdr color_pair)]
-         [dimension (get-dimension brick_width)]
-         [width (car dimension)]
-         [height (cdr dimension)]
-         [x (* (add1 *quiet_zone_width*) brick_width)]
-         [y (* (add1 *top_margin*) brick_width)]
-         [bar_height (* brick_width *bar_height*)]
-         [foot_height (* brick_width (+ *bar_height* *foot_height*))]
-         [target (make-bitmap width height)]
-         [dc (new bitmap-dc% [bitmap target])])
-
-    (draw-background dc back_color brick_width)
-
-    (set-color dc front_color)
-    (send dc set-text-foreground front_color)
-    (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
+    (draw-bars dc "110011100011" #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
     
-    ;; first char
-    (send dc draw-text (substring ean13 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
+    (save-bars dc file_name)))
 
-    (let loop-group ([group_list (ean13->bar_group ean13)]
-                     [start_x x])
-      (when (not (null? group_list))
-            (let* ([group (car group_list)]
-                   [hold_str (car group)]
-                   [hold_bar (cdr group)])
-              
-              (when (not (string=? hold_str "$"))
-                    (send dc draw-text hold_str (+ start_x (* 2 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width)))
-
-              (let loop-bar ([loop_list (string->list hold_bar)]
-                             [loop_x start_x])
-                (when (not (null? loop_list))
-                      (cond
-                       [(char=? (car loop_list) #\1)
-                        (send dc draw-rectangle loop_x y brick_width bar_height)]
-                       [(char=? (car loop_list) #\2)
-                        (send dc draw-rectangle loop_x y brick_width foot_height)])
-
-                      (loop-bar (cdr loop_list) (+ loop_x brick_width))))
-              
-              (loop-group (cdr group_list) (+ start_x (* (string-length hold_bar) brick_width))))))
-
-    ;; last char
-    (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
-
-    (send target save-file file_name 'png)))
+;(define (draw-bak-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+;  (let* ([front_color (car color_pair)]
+;         [back_color (cdr color_pair)]
+;         [dimension (get-dimension brick_width)]
+;         [width (car dimension)]
+;         [height (cdr dimension)]
+;         [x (* (add1 *quiet_zone_width*) brick_width)]
+;         [y (* (add1 *top_margin*) brick_width)]
+;         [bar_height (* brick_width *bar_height*)]
+;         [foot_height (* brick_width (+ *bar_height* *foot_height*))]
+;         [target (make-bitmap width height)]
+;         [dc (new bitmap-dc% [bitmap target])])
+;
+;    (draw-background dc back_color brick_width)
+;
+;    (set-color dc front_color)
+;    (send dc set-text-foreground front_color)
+;    (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
+;    
+;    ;; first char
+;    (send dc draw-text (substring ean13 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
+;
+;    (let loop-group ([group_list (ean13->bar_group ean13)]
+;                     [start_x x])
+;      (when (not (null? group_list))
+;            (let* ([group (car group_list)]
+;                   [hold_str (car group)]
+;                   [hold_bar (cdr group)])
+;              
+;              (when (not (string=? hold_str "$"))
+;                    (send dc draw-text hold_str (+ start_x (* 2 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width)))
+;
+;              (let loop-bar ([loop_list (string->list hold_bar)]
+;                             [loop_x start_x])
+;                (when (not (null? loop_list))
+;                      (cond
+;                       [(char=? (car loop_list) #\1)
+;                        (send dc draw-rectangle loop_x y brick_width bar_height)]
+;                       [(char=? (car loop_list) #\2)
+;                        (send dc draw-rectangle loop_x y brick_width foot_height)])
+;
+;                      (loop-bar (cdr loop_list) (+ loop_x brick_width))))
+;              
+;              (loop-group (cdr group_list) (+ start_x (* (string-length hold_bar) brick_width))))))
+;
+;    ;; last char
+;    (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
+;
+;    (send target save-file file_name 'png)))
 
 (define (search-barcode-on-row points_row guess_module_width)
   (let ([max_module_width (floor (/ (length points_row) 95))]

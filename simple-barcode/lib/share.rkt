@@ -8,8 +8,13 @@
           [points->bw (-> list? exact-nonnegative-integer? list?)]
           [squash-points (-> list? exact-nonnegative-integer? pair?)]
           [guess-first-dark-width (-> list? exact-nonnegative-integer?)]
-          [init-draw (->* (exact-nonnegative-integer? exact-nonnegative-integer?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
-          [draw-bars (->* (is-a?/c bitmap-dc%) string? void?)]
+          [*quiet_zone_width* exact-nonnegative-integer?]
+          [*top_margin* exact-nonnegative-integer?]
+          [*down_margin* exact-nonnegative-integer?]
+          [*bar_height* exact-nonnegative-integer?]
+          [draw-init (->* (exact-nonnegative-integer? exact-nonnegative-integer?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
+          [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
+          [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
           ))
 
 (require racket/draw)
@@ -18,22 +23,7 @@
 (define *bar_height* 60)
 (define *top_margin* 10)
 (define *down_margin* 20)
-
-(define (draw-bars dc bars)
-  (let* ([x (* (add1 *quiet_zone_width*) brick_width)]
-         [y (* (add1 *top_margin*) brick_width)]
-         [bar_height (* brick_width *bar_height*)]
-         [target (make-bitmap width height)]
-         [dc (new bitmap-dc% [bitmap target])])
-
-    (let loop-bar ([loop_list (string->list bars)]
-                   [loop_x start_x])
-      (when (not (null? loop_list))
-            (when (char=? (car loop_list) #\1)
-              (send dc draw-rectangle loop_x y brick_width bar_height))
-
-            (loop-bar (cdr loop_list) (+ loop_x brick_width))))
-    dc))
+(define *font_size* 5)
 
 (define (draw-init width height #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([front_color (car color_pair)]
@@ -48,11 +38,22 @@
     (send dc set-text-foreground front_color)
     (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
 
-    (when (not (string=? color "transparent"))
-          (set-color dc color)
-          (let* ([width (car dimension)]
-                 [height (cdr dimension)])
-            (send dc draw-rectangle 0 0 width height)))))
+    (when (not (string=? back_color "transparent"))
+          (set-color dc back_color)
+          (send dc draw-rectangle 0 0 width height))
+    dc))
+
+(define (save-bars dc file_name)
+    (send (send dc get-bitmap) save-file file_name 'png))
+
+(define (draw-bars dc bars #:x x #:y y #:bar_width bar_width #:bar_height bar_height)
+  (let loop ([loop_list (string->list bars)]
+             [loop_x x])
+    (when (not (null? loop_list))
+          (when (char=? (car loop_list) #\1)
+                (printf "~a,~a,~a,~a\n" loop_x y bar_width bar_height)
+                (send dc draw-rectangle loop_x y bar_width bar_height))
+          (loop (cdr loop_list) (+ loop_x bar_width)))))
 
 (define (set-color dc color)
   (when (not (string=? color "transparent"))
