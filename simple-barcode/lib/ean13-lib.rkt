@@ -4,7 +4,7 @@
           [ean13-checksum (-> string? exact-nonnegative-integer?)]
           [char->barstring (-> char? symbol? string?)]
           [bar->string (-> string? string?)]
-          [ean13->bar_group (-> string? (listof pair?))]
+          [ean13->bars (-> string? string?)]
           [get-dimension (-> exact-nonnegative-integer? pair?)]
           [draw-ean13 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [draw-ean13-raw (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
@@ -122,9 +122,30 @@
            2])])
     (list-ref (hash-ref char_bar_map ch) place)))
 
-(define (ean13->bar_group ean13)
+(define (ean13->bars ean13)
   (let* ([char_list (string->list ean13)]
          [parity_number (car char_list)])
+    (string-append
+     "000"
+     (char->barstring (list-ref char_list 1) (if (eq? (char-parity parity_number 1) 'odd) 'left_odd 'left_even))
+     (char->barstring (list-ref char_list 2) (if (eq? (char-parity parity_number 2) 'odd) 'left_odd 'left_even))
+     (char->barstring (list-ref char_list 3) (if (eq? (char-parity parity_number 3) 'odd) 'left_odd 'left_even))
+     (char->barstring (list-ref char_list 4) (if (eq? (char-parity parity_number 4) 'odd) 'left_odd 'left_even))
+     (char->barstring (list-ref char_list 5) (if (eq? (char-parity parity_number 5) 'odd) 'left_odd 'left_even))
+     (char->barstring (list-ref char_list 6) (if (eq? (char-parity parity_number 6) 'odd) 'left_odd 'left_even))
+     "00000"
+     (char->barstring (list-ref char_list 7) 'right)
+     (char->barstring (list-ref char_list 8) 'right)
+     (char->barstring (list-ref char_list 9) 'right)
+     (char->barstring (list-ref char_list 10) 'right)
+     (char->barstring (list-ref char_list 11) 'right)
+     (char->barstring (list-ref char_list 12) 'right)
+     "000")))
+
+(define (ean13->barss ean13)
+  (let* ([char_list (string->list ean13)]
+         [parity_number (car char_list)])
+    
     (list
      '("$" . "202")
      (cons (string (list-ref char_list 1)) (char->barstring (list-ref char_list 1) (if (eq? (char-parity parity_number 1) 'odd) 'left_odd 'left_even)))
@@ -169,63 +190,37 @@
          [y (* (add1 *top_margin*) brick_width)]
          [bar_height (* brick_width *bar_height*)]
          [foot_height (* brick_width (+ *bar_height* *foot_height*))]
+         [bars (ean13->bars ean13)]
          [dc #f])
 
     (set! dc (draw-init width height #:color_pair color_pair #:brick_width brick_width))
     
-    (draw-bars dc "110011100011" #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
+    (draw-bars dc bars #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
+    
+    ;; left split
+    (draw-bars dc "101" #:x x #:y y #:bar_width brick_width #:bar_height foot_height)
+
+    ;; middle split
+    (draw-bars dc "01010" #:x (+ x (* 45 brick_width)) #:y y #:bar_width brick_width #:bar_height foot_height)
+
+    ;; right split
+    (draw-bars dc "101" #:x (+ x (* 92 brick_width)) #:y y #:bar_width brick_width #:bar_height foot_height)
+
+    ;; first char
+    (send dc draw-text (substring ean13 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
+
+    (let loop ([loop_list (cdr (string->list ean13))]
+               [start_x (+ x (* 3 brick_width))])
+      (when (not (null? loop_list))
+            (send dc draw-text (string (car loop_list)) (+ start_x (* 2 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
+            (if (= (length loop_list) 7)
+                (loop (cdr loop_list) (+ start_x (* 12 brick_width)))
+                (loop (cdr loop_list) (+ start_x (* 7 brick_width))))))
+
+    ;; last char
+    (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
     
     (save-bars dc file_name)))
-
-;(define (draw-bak-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-;  (let* ([front_color (car color_pair)]
-;         [back_color (cdr color_pair)]
-;         [dimension (get-dimension brick_width)]
-;         [width (car dimension)]
-;         [height (cdr dimension)]
-;         [x (* (add1 *quiet_zone_width*) brick_width)]
-;         [y (* (add1 *top_margin*) brick_width)]
-;         [bar_height (* brick_width *bar_height*)]
-;         [foot_height (* brick_width (+ *bar_height* *foot_height*))]
-;         [target (make-bitmap width height)]
-;         [dc (new bitmap-dc% [bitmap target])])
-;
-;    (draw-background dc back_color brick_width)
-;
-;    (set-color dc front_color)
-;    (send dc set-text-foreground front_color)
-;    (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
-;    
-;    ;; first char
-;    (send dc draw-text (substring ean13 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
-;
-;    (let loop-group ([group_list (ean13->bar_group ean13)]
-;                     [start_x x])
-;      (when (not (null? group_list))
-;            (let* ([group (car group_list)]
-;                   [hold_str (car group)]
-;                   [hold_bar (cdr group)])
-;              
-;              (when (not (string=? hold_str "$"))
-;                    (send dc draw-text hold_str (+ start_x (* 2 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width)))
-;
-;              (let loop-bar ([loop_list (string->list hold_bar)]
-;                             [loop_x start_x])
-;                (when (not (null? loop_list))
-;                      (cond
-;                       [(char=? (car loop_list) #\1)
-;                        (send dc draw-rectangle loop_x y brick_width bar_height)]
-;                       [(char=? (car loop_list) #\2)
-;                        (send dc draw-rectangle loop_x y brick_width foot_height)])
-;
-;                      (loop-bar (cdr loop_list) (+ loop_x brick_width))))
-;              
-;              (loop-group (cdr group_list) (+ start_x (* (string-length hold_bar) brick_width))))))
-;
-;    ;; last char
-;    (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
-;
-;    (send target save-file file_name 'png)))
 
 (define (search-barcode-on-row points_row guess_module_width)
   (let ([max_module_width (floor (/ (length points_row) 95))]

@@ -54,7 +54,7 @@
                    "0100111"
                    "0111101"
                    "0110011"
-                   "02020"
+                   "00000"
                    "1000010"
                    "1100110"
                    "1100110"
@@ -230,8 +230,7 @@
           (check-equal? (read-ean13 ean13_write_test1) "7501031311309")
           )
         (lambda ()
-;          (delete-file ean13_write_test1)
-          (void)
+          (delete-file ean13_write_test1)
           )))
    ))
 
