@@ -7,10 +7,10 @@
 (require rackunit "../../lib/ean13-lib.rkt")
 
 (require racket/runtime-path)
-(define-runtime-path ean13_file "../example/barcode_ean13.png")
-(define-runtime-path ean13_w5_file "../example/barcode_ean13_w5.png")
-(define-runtime-path ean13_color_file "../example/barcode_ean13_color.png")
-(define-runtime-path ean13_trans_file "../example/barcode_ean13_trans.png")
+(define-runtime-path ean13_file "../../example/barcode_ean13.png")
+(define-runtime-path ean13_w5_file "../../example/barcode_ean13_w5.png")
+(define-runtime-path ean13_color_file "../../example/barcode_ean13_color.png")
+(define-runtime-path ean13_trans_file "../../example/barcode_ean13_trans.png")
 
 (define-runtime-path ean13_test1 "ean13_test1.png")
 
@@ -73,132 +73,6 @@
       (check-equal? (cdr dimension) 90)
       )
     )
-
-   (test-case
-    "test-search-barcode-on-row"
-    
-    (let ([points_row_false1 '(1 0)]
-          [points_row_true1 '(1 0 1
-                              0 1 1 0 0 0 1 
-                              0 1 0 0 1 1 1 
-                              0 0 1 1 0 0 1
-                              0 1 0 0 1 1 1
-                              0 1 1 1 1 0 1
-                              0 1 1 0 0 1 1
-                              0 1 0 1 0
-                              1 0 0 0 0 1 0
-                              1 1 0 0 1 1 0
-                              1 1 0 0 1 1 0
-                              1 0 0 0 0 1 0
-                              1 1 1 0 0 1 0
-                              1 1 1 0 1 0 0 
-                              1 0 1)]
-          [points_row_true2 '(1 0 1 0 0 1 0
-                              1 0 1
-                              0 1 1 0 0 0 1 
-                              0 1 0 0 1 1 1 
-                              0 0 1 1 0 0 1
-                              0 1 0 0 1 1 1
-                              0 1 1 1 1 0 1
-                              0 1 1 0 0 1 1
-                              0 1 0 1 0
-                              1 0 0 0 0 1 0
-                              1 1 0 0 1 1 0
-                              1 1 0 0 1 1 0
-                              1 0 0 0 0 1 0
-                              1 1 1 0 0 1 0
-                              1 1 1 0 1 0 0 
-                              1 0 1
-                              0 0 1 0 1 1 1)]
-          )
-      (check-equal? (search-barcode-on-row points_row_false1 #f) #f)
-      (let ([res (search-barcode-on-row points_row_true1 #f)])
-        (check-equal? (list-ref res 0) 1)
-        (check-equal? (list-ref res 1) 0)
-        (check-equal? (list-ref res 2) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101"))
-      (let ([res (search-barcode-on-row points_row_true2 #f)])
-        (check-equal? (list-ref res 0) 1)
-        (check-equal? (list-ref res 1) 7)
-        (check-equal? (list-ref res 2) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101"))
-      (let ([res (search-barcode-on-row points_row_true1 1)])
-        (check-equal? (list-ref res 0) 1)
-        (check-equal? (list-ref res 1) 0)
-        (check-equal? (list-ref res 2) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101"))
-      (check-equal? (search-barcode-on-row points_row_true1 3) #f)
-    ))
-
-   (test-case
-    "test-search-barcode"
-    
-    (let* (
-           [real_row '(
-                       1 0 1 0 0 1 0
-                         1 0 1
-                         0 1 1 0 0 0 1 
-                         0 1 0 0 1 1 1 
-                         0 0 1 1 0 0 1
-                         0 1 0 0 1 1 1
-                         0 1 1 1 1 0 1
-                         0 1 1 0 0 1 1
-                         0 1 0 1 0
-                         1 0 0 0 0 1 0
-                         1 1 0 0 1 1 0
-                         1 1 0 0 1 1 0
-                         1 0 0 0 0 1 0
-                         1 1 1 0 0 1 0
-                         1 1 1 0 1 0 0 
-                         1 0 1
-                         0 0 1 0 1 1 1)]
-           [real_row2 '(
-                       1 0 1 0 0 1
-                         1 0 1
-                         0 1 1 0 0 0 1 
-                         0 1 0 0 1 1 1 
-                         0 0 1 1 0 0 1
-                         0 1 0 0 1 1 1
-                         0 1 1 1 1 0 1
-                         0 1 1 0 0 1 1
-                         0 1 0 1 0
-                         1 0 0 0 0 1 0
-                         1 1 0 0 1 1 0
-                         1 1 0 0 1 1 0
-                         1 0 0 0 0 1 0
-                         1 1 1 0 0 1 0
-                         1 1 1 0 1 0 0 
-                         1 0 1
-                         0 0 1 0 1 1 1 0)]
-           [noise_row '(
-                        1 0 1 0 0 1 0
-                          1 0 0
-                          0 1 1 0 0 0 1 
-                          0 1 0 0 1 1 1 
-                          0 0 1 1 0 0 1
-                          0 1 0 0 1 1 1
-                          0 1 1 1 1 0 1
-                          0 1 1 0 0 1 1
-                          0 1 0 1 0
-                          1 0 0 0 0 1 0
-                          1 1 0 0 1 1 0
-                          1 1 0 0 1 1 0
-                          1 0 0 0 0 1 0
-                          1 1 1 0 0 1 0
-                          1 1 1 0 1 0 0 
-                          1 0 1
-                          0 0 1 0 1 1 1)]
-           [points_list_true1 (list noise_row noise_row real_row real_row real_row real_row real_row noise_row)]
-           [points_list_true2 (list real_row real_row real_row real_row real_row noise_row)]
-           [points_list_true3 (list real_row real_row real_row real_row real_row)]
-           [points_list_false1 (list noise_row noise_row real_row real_row real_row real_row noise_row)]
-           [points_list_false2 (list noise_row noise_row real_row real_row real_row real_row noise_row real_row)]
-           [points_list_false3 (list real_row real_row real_row real_row real_row2)]
-           )
-      (check-equal? (search-barcode points_list_true1) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
-      (check-equal? (search-barcode points_list_true2) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
-      (check-equal? (search-barcode points_list_true3) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
-      (check-equal? (search-barcode points_list_false1) #f)
-      (check-equal? (search-barcode points_list_false2) #f)
-      (check-equal? (search-barcode points_list_false3) #f)
-    ))
 
    (test-case
     "test-get-bar-char-map"

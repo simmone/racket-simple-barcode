@@ -8,13 +8,9 @@
           [get-dimension (-> exact-nonnegative-integer? pair?)]
           [draw-ean13 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [draw-ean13-raw (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
-          [search-barcode-on-row (-> list? (or/c exact-nonnegative-integer? #f) (or/c list? #f))]
-          [search-barcode (-> (listof list?) (or/c string? #f))]
           [read-ean13 (-> path-string? string?)]
           [get-bar-char-map (-> hash?)]
           ))
-
-(require racket/draw)
 
 (require "share.rkt")
 
@@ -142,27 +138,6 @@
      (char->barstring (list-ref char_list 12) 'right)
      "000")))
 
-(define (ean13->barss ean13)
-  (let* ([char_list (string->list ean13)]
-         [parity_number (car char_list)])
-    
-    (list
-     '("$" . "202")
-     (cons (string (list-ref char_list 1)) (char->barstring (list-ref char_list 1) (if (eq? (char-parity parity_number 1) 'odd) 'left_odd 'left_even)))
-     (cons (string (list-ref char_list 2)) (char->barstring (list-ref char_list 2) (if (eq? (char-parity parity_number 2) 'odd) 'left_odd 'left_even)))
-     (cons (string (list-ref char_list 3)) (char->barstring (list-ref char_list 3) (if (eq? (char-parity parity_number 3) 'odd) 'left_odd 'left_even)))
-     (cons (string (list-ref char_list 4)) (char->barstring (list-ref char_list 4) (if (eq? (char-parity parity_number 4) 'odd) 'left_odd 'left_even)))
-     (cons (string (list-ref char_list 5)) (char->barstring (list-ref char_list 5) (if (eq? (char-parity parity_number 5) 'odd) 'left_odd 'left_even)))
-     (cons (string (list-ref char_list 6)) (char->barstring (list-ref char_list 6) (if (eq? (char-parity parity_number 6) 'odd) 'left_odd 'left_even)))
-     '("$" . "02020")
-     (cons (string (list-ref char_list 7)) (char->barstring (list-ref char_list 7) 'right))
-     (cons (string (list-ref char_list 8)) (char->barstring (list-ref char_list 8) 'right))
-     (cons (string (list-ref char_list 9)) (char->barstring (list-ref char_list 9) 'right))
-     (cons (string (list-ref char_list 10)) (char->barstring (list-ref char_list 10) 'right))
-     (cons (string (list-ref char_list 11)) (char->barstring (list-ref char_list 11) 'right))
-     (cons (string (list-ref char_list 12)) (char->barstring (list-ref char_list 12) 'right))
-     '("$" . "202"))))
-
 (define *foot_height* 7)
 
 (define (get-dimension brick_width)
@@ -221,73 +196,6 @@
     (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
     
     (save-bars dc file_name)))
-
-(define (search-barcode-on-row points_row guess_module_width)
-  (let ([max_module_width (floor (/ (length points_row) 95))]
-        [loop_module_width guess_module_width])
-    (let loop ([points points_row])
-      (if (not (null? points))
-          (if (= (car points) 1)
-              (begin
-                (when (not loop_module_width)
-                      (set! loop_module_width (guess-first-dark-width points)))
-                
-                (let* ([squashed_line (squash-points points_row loop_module_width)]
-                       [squashed_cols (car squashed_line)]
-                       [squashed_positions (cdr squashed_line)]
-                       [original_str 
-                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) points_row))]
-                       [squashed_str 
-                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
-
-                  (if (regexp-match #px"101[0-1]{42}01010[0-1]{42}101" squashed_str)
-                      (let ([barcode_pos (car (regexp-match-positions #px"101[0-1]{42}01010[0-1]{42}101" squashed_str))])
-                        (list
-                         loop_module_width
-                         (car barcode_pos)
-                         (substring squashed_str (car barcode_pos) (cdr barcode_pos))))
-                      (if (> (length points) loop_module_width)
-                          (loop (list-tail points loop_module_width))
-                          #f))))
-              (loop (cdr points)))
-          #f))))
-
-(define (search-barcode rows)
-  (let loop ([loop_rows rows]
-             [loop_start_pos -1]
-             [loop_barcode ""]
-             [loop_count 0]
-             [loop_module_width #f])
-    (if (= loop_count 5)
-        loop_barcode
-        (if (not (null? loop_rows))
-            (let ([result (search-barcode-on-row (car loop_rows) loop_module_width)])
-              (if result
-                  (let ([module_width (list-ref result 0)]
-                        [start_pos (list-ref result 1)]
-                        [barcode (list-ref result 2)])
-                    (if (and
-                         (= start_pos loop_start_pos)
-                         (string=? barcode loop_barcode))
-                        (loop
-                         (cdr loop_rows)
-                         start_pos
-                         barcode
-                         (add1 loop_count)
-                         module_width)
-                        (loop
-                         (cdr loop_rows)
-                         start_pos
-                         barcode
-                         1
-                         module_width)))
-                  (loop
-                   (cdr loop_rows)
-                   -1
-                   ""
-                   0
-                   #f)))
-            #f))))
 
 (define (read-ean13 pic_path)
    (let (

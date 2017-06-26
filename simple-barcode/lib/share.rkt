@@ -15,6 +15,8 @@
           [draw-init (->* (exact-nonnegative-integer? exact-nonnegative-integer?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
           [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
           [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
+          [search-barcode-on-row (-> list? (or/c exact-nonnegative-integer? #f) (or/c list? #f))]
+          [search-barcode (-> (listof list?) (or/c string? #f))]
           ))
 
 (require racket/draw)
@@ -173,3 +175,73 @@
                 (loop (cdr points_loop) dark_length))
             (loop (cdr points_loop) (add1 dark_length)))
         dark_length)))
+
+(define *ean13_mode_regx* (pregexp "101[0-1]{42}01010[0-1]{42}101"))
+
+(define (search-barcode-on-row points_row guess_module_width)
+  (let ([max_module_width (floor (/ (length points_row) 95))]
+        [loop_module_width guess_module_width])
+    (let loop ([points points_row])
+      (if (not (null? points))
+          (if (= (car points) 1)
+              (begin
+                (when (not loop_module_width)
+                      (set! loop_module_width (guess-first-dark-width points)))
+                
+                (let* ([squashed_line (squash-points points_row loop_module_width)]
+                       [squashed_cols (car squashed_line)]
+                       [squashed_positions (cdr squashed_line)]
+                       [original_str 
+                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) points_row))]
+                       [squashed_str 
+                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
+
+                  (if (regexp-match *ean13_mode_regx* squashed_str)
+                      (let ([barcode_pos (car (regexp-match-positions *ean13_mode_regx* squashed_str))])
+                        (list
+                         loop_module_width
+                         (car barcode_pos)
+                         (substring squashed_str (car barcode_pos) (cdr barcode_pos))))
+                      (if (> (length points) loop_module_width)
+                          (loop (list-tail points loop_module_width))
+                          #f))))
+              (loop (cdr points)))
+          #f))))
+
+(define (search-barcode rows)
+  (let loop ([loop_rows rows]
+             [loop_start_pos -1]
+             [loop_barcode ""]
+             [loop_count 0]
+             [loop_module_width #f])
+    (if (= loop_count 5)
+        loop_barcode
+        (if (not (null? loop_rows))
+            (let ([result (search-barcode-on-row (car loop_rows) loop_module_width)])
+              (if result
+                  (let ([module_width (list-ref result 0)]
+                        [start_pos (list-ref result 1)]
+                        [barcode (list-ref result 2)])
+                    (if (and
+                         (= start_pos loop_start_pos)
+                         (string=? barcode loop_barcode))
+                        (loop
+                         (cdr loop_rows)
+                         start_pos
+                         barcode
+                         (add1 loop_count)
+                         module_width)
+                        (loop
+                         (cdr loop_rows)
+                         start_pos
+                         barcode
+                         1
+                         module_width)))
+                  (loop
+                   (cdr loop_rows)
+                   -1
+                   ""
+                   0
+                   #f)))
+            #f))))
+
