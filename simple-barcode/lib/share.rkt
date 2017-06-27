@@ -176,14 +176,16 @@
             (loop (cdr points_loop) (add1 dark_length)))
         dark_length)))
 
-(define *mode_hash* hash(
-                         'ean13 (list 
-                                 (pregexp "101[0-1]{42}01010[0-1]{42}101"))
-                         'code128 (list 
-                                   (pregexp "11010000100.+1100011101011")
-                                   (pregexp "11010010000.+1100011101011")
-                                   (pregexp "11010011100.+1100011101011"))
-                         ))
+(define *pattern_list* (list
+                         (cons 'ean13 
+                               (list 
+                                (pregexp "101[0-1]{42}01010[0-1]{42}101")))
+                         (cons  'code128 
+                                (list 
+                                 (pregexp "11010000100.+1100011101011")
+                                 (pregexp "11010010000.+1100011101011")
+                                 (pregexp "11010011100.+1100011101011"))
+                         )))
 
 (define (search-barcode-on-row points_row guess_module_width)
   (let ([max_module_width (floor (/ (length points_row) 95))]
@@ -203,15 +205,23 @@
                        [squashed_str 
                         (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
 
-                  (if (ormap (lambda (regx) (regexp-match regx squashed_str)) (hash-values
-                      (let ([barcode_pos (car (regexp-match-positions regx squashed_str))])
-                        (list
-                         loop_module_width
-                         (car barcode_pos)
-                         (substring squashed_str (car barcode_pos) (cdr barcode_pos))))
-                      (if (> (length points) loop_module_width)
-                          (loop (list-tail points loop_module_width))
-                          #f))))
+                  (let match-loop ([loop_pattern_list pattern_list])
+                    (if (not (null? loop_pattern_list))
+                        (let* ([mode (caar loop_pattern_list)]
+                               [regex_list (cdar loop_pattern_list)])
+                          (let regex-loop ([loop_regex_list regex_list])
+                            (if (not (null? loop_regex_list))
+                                (let ([search_result (regexp-match-positions regx squashed_str)])
+                                  (if search_result
+                                      (list
+                                       loop_module_width
+                                       (caar search_result)
+                                       (substring squashed_str (caar barcode_pos) (cdar barcode_pos)))
+                                      (regex-loop (cdr loop_regex_list))))
+                                (match-loop (cdr loop_pattern_list)))))
+                        (if (> (length points) loop_module_width)
+                            (loop (list-tail points loop_module_width))
+                            #f)))))
               (loop (cdr points)))
           #f))))
 
