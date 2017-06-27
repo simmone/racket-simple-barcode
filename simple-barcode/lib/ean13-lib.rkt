@@ -3,12 +3,11 @@
 (provide (contract-out
           [ean13-checksum (-> string? exact-nonnegative-integer?)]
           [char->barstring (-> char? symbol? string?)]
-          [bar->string (-> string? string?)]
+          [ean13-bar->string (-> string? string?)]
           [ean13->bars (-> string? string?)]
           [get-dimension (-> exact-nonnegative-integer? pair?)]
           [draw-ean13 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [draw-ean13-raw (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
-          [read-ean13 (-> path-string? string?)]
           [get-bar-char-map (-> hash?)]
           ))
 
@@ -67,7 +66,7 @@
         bar_list)))
     bar_char_map))
 
-(define (bar->string bar_string)
+(define (ean13-bar->string bar_string)
   (let* ([bar_char_map (get-bar-char-map)]
          [string_list
           (list
@@ -196,17 +195,3 @@
     (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
     
     (save-bars dc file_name)))
-
-(define (read-ean13 pic_path)
-   (let (
-         [step1_points_list #f]
-         [step2_threshold #f]
-         [step3_bw_points #f]
-         )
-     (set! step1_points_list (pic->points pic_path))
-     (set! step2_threshold (find-threshold step1_points_list))
-     (set! step3_bw_points (points->bw step1_points_list step2_threshold))
-     (let ([search_result (search-barcode step3_bw_points)])
-       (if search_result
-           (bar->string search_result)
-           ""))))
