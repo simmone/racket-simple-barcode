@@ -16,7 +16,7 @@
           [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
           [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
           [search-barcode-on-row (-> list? (or/c exact-nonnegative-integer? #f) (or/c list? #f))]
-          [search-barcode (-> (listof list?) (or/c string? #f))]
+          [search-barcode (-> (listof list?) (or/c pair? #f))]
           ))
 
 (require racket/draw)
@@ -205,18 +205,19 @@
                        [squashed_str 
                         (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
 
-                  (let match-loop ([loop_pattern_list pattern_list])
+                  (let match-loop ([loop_pattern_list *pattern_list*])
                     (if (not (null? loop_pattern_list))
                         (let* ([mode (caar loop_pattern_list)]
                                [regex_list (cdar loop_pattern_list)])
                           (let regex-loop ([loop_regex_list regex_list])
                             (if (not (null? loop_regex_list))
-                                (let ([search_result (regexp-match-positions regx squashed_str)])
+                                (let ([search_result (regexp-match-positions (car regex_list) squashed_str)])
                                   (if search_result
                                       (list
+                                       mode
                                        loop_module_width
                                        (caar search_result)
-                                       (substring squashed_str (caar barcode_pos) (cdar barcode_pos)))
+                                       (substring squashed_str (caar search_result) (cdar search_result)))
                                       (regex-loop (cdr loop_regex_list))))
                                 (match-loop (cdr loop_pattern_list)))))
                         (if (> (length points) loop_module_width)
@@ -227,35 +228,41 @@
 
 (define (search-barcode rows)
   (let loop ([loop_rows rows]
+             [loop_mode #f]
              [loop_start_pos -1]
              [loop_barcode ""]
              [loop_count 0]
              [loop_module_width #f])
     (if (= loop_count 5)
-        loop_barcode
+        (cons loop_mode loop_barcode)
         (if (not (null? loop_rows))
             (let ([result (search-barcode-on-row (car loop_rows) loop_module_width)])
               (if result
-                  (let ([module_width (list-ref result 0)]
-                        [start_pos (list-ref result 1)]
-                        [barcode (list-ref result 2)])
+                  (let ([mode (list-ref result 0)]
+                        [module_width (list-ref result 1)]
+                        [start_pos (list-ref result 2)]
+                        [barcode (list-ref result 3)])
                     (if (and
+                         (eq? mode loop_mode)
                          (= start_pos loop_start_pos)
                          (string=? barcode loop_barcode))
                         (loop
                          (cdr loop_rows)
+                         mode
                          start_pos
                          barcode
                          (add1 loop_count)
                          module_width)
                         (loop
                          (cdr loop_rows)
+                         mode
                          start_pos
                          barcode
                          1
                          module_width)))
                   (loop
                    (cdr loop_rows)
+                   #f
                    -1
                    ""
                    0
