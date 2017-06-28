@@ -22,7 +22,7 @@
                  [bars (cdr search_result)])
              (cond
               [(eq? type 'ean13)
-               (ean13-bar->string search_result)]
+               (ean13-bar->string bars)]
               [else
                ""]))
            ""))))
