@@ -1,6 +1,8 @@
 #lang racket
 
-(require simple-barcode)
+;(require simple-barcode)
+
+(require "../main.rkt")
 
 (barcode-write "750103131130" "barcode_ean13.png")
 
