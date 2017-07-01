@@ -9,7 +9,7 @@
           [code128->bars (-> list? string?)]
           ))
 
-(require racket/draw)
+(require "share.rkt")
 
 (define *code_list*
   '(
@@ -389,32 +389,32 @@
                (loop (cdr loop_list) current_mode (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list)))
            (reverse result_list))))))
 
-(define (get-dimension brick_width)
+(define (get-dimension code_length brick_width)
   (cons
-   (* (+ *quiet_zone_width* 3 3 (* 6 7) 5 (* 6 7) 3 *quiet_zone_width*) brick_width)
+   (* (+ *quiet_zone_width* code_length *quiet_zone_width*) brick_width)
    (* (+ *top_margin* *bar_height* *down_margin*) brick_width)))
 
-(define (draw-ean13 ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (if (regexp-match #px"^[0-9]{12}$" ean13)
-      (draw-ean13-raw 
-       (string-append
-        ean13
-        (number->string (ean13-checksum ean13)))
-       file_name
-       #:color_pair color_pair
-       #:brick_width brick_width)
-      (error
-       "invalid ean13 string: length is 12, only digit")))
+(define (draw-code128 code128 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+  (let* ([encoded_list (encode-c128 code128)]
+         [code_list (shift-compress encoded_list)]
+         [checksum (code128-checksum (code->value (code_list)))])
+    (draw-code128-raw 
+     (string-append
+      code_list
+      (number->string checksum)
+      file_name
+      #:color_pair color_pair
+      #:brick_width brick_width))))
 
-(define (draw-ean13-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+(define (draw-code128-raw code_list checksum file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([dimension (get-dimension brick_width)]
          [width (car dimension)]
          [height (cdr dimension)]
          [x (* (add1 *quiet_zone_width*) brick_width)]
          [y (* (add1 *top_margin*) brick_width)]
          [bar_height (* brick_width *bar_height*)]
-         [foot_height (* brick_width (+ *bar_height* *foot_height*))]
-         [bars (ean13->bars ean13)]
+         [foot_height (* brick_width *bar_height*)]
+         [bars (code128->bars code_list)]
          [dc #f])
 
     (set! dc (draw-init width height #:color_pair color_pair #:brick_width brick_width))
@@ -431,9 +431,9 @@
     (draw-bars dc "101" #:x (+ x (* 92 brick_width)) #:y y #:bar_width brick_width #:bar_height foot_height)
 
     ;; first char
-    (send dc draw-text (substring ean13 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
+    (send dc draw-text (substring code_list 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
 
-    (let loop ([loop_list (cdr (string->list ean13))]
+    (let loop ([loop_list (cdr (string->list code_list))]
                [start_x (+ x (* 3 brick_width))])
       (when (not (null? loop_list))
             (send dc draw-text (string (car loop_list)) (+ start_x (* 2 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
@@ -445,4 +445,3 @@
     (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
     
     (save-bars dc file_name)))
-
