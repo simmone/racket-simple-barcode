@@ -58,10 +58,10 @@
     )
 
    (test-case
-    "test-get-dimension"
+    "test-get-ean13-dimension"
     
     (let* ([brick_width 1]
-           [dimension (get-dimension brick_width)])
+           [dimension (get-ean13-dimension brick_width)])
       (check-equal? (car dimension) 118)
       (check-equal? (cdr dimension) 90)
       )

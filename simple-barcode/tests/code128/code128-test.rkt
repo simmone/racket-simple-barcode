@@ -93,9 +93,9 @@
     )
    
    (test-case
-    "test-get-dimension"
+    "test-get-code128-dimension"
     
-    (check-equal? (get-dimension 11 1) '(143 . 85))
+    (check-equal? (get-code128-dimension 11 1) '(143 . 85))
     )
    
    (test-case

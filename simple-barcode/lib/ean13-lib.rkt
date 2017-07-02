@@ -5,7 +5,7 @@
           [char->barstring (-> char? symbol? string?)]
           [ean13-bar->string (-> string? string?)]
           [ean13->bars (-> string? string?)]
-          [get-dimension (-> exact-nonnegative-integer? pair?)]
+          [get-ean13-dimension (-> exact-nonnegative-integer? pair?)]
           [draw-ean13 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [draw-ean13-raw (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [get-bar-char-map (-> hash?)]
@@ -139,7 +139,7 @@
 
 (define *foot_height* 7)
 
-(define (get-dimension brick_width)
+(define (get-ean13-dimension brick_width)
   (cons
    (* (+ *quiet_zone_width* 3 3 (* 6 7) 5 (* 6 7) 3 *quiet_zone_width*) brick_width)
    (* (+ *top_margin* *bar_height* *down_margin*) brick_width)))
@@ -157,7 +157,7 @@
        "invalid ean13 string: length is 12, only digit")))
 
 (define (draw-ean13-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (let* ([dimension (get-dimension brick_width)]
+  (let* ([dimension (get-ean13-dimension brick_width)]
          [width (car dimension)]
          [height (cdr dimension)]
          [x (* (add1 *quiet_zone_width*) brick_width)]

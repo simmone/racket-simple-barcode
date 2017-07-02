@@ -6,6 +6,7 @@
 
 (require "share.rkt")
 (require "ean13-lib.rkt")
+(require "code128-lib.rkt")
 
 (define (barcode-read pic_path)
    (let (
@@ -23,6 +24,8 @@
              (cond
               [(eq? type 'ean13)
                (ean13-bar->string bars)]
+              [(eq? type 'code128)
+               (code128-bar->string bars)]
               [else
                ""]))
            ""))))

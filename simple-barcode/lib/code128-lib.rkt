@@ -7,8 +7,9 @@
           [shift-compress (-> list? list?)]
           [code128-checksum (-> (listof exact-nonnegative-integer?) exact-nonnegative-integer?)]
           [code128->bars (-> list? string?)]
-          [get-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
+          [get-code128-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
           [draw-code128 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
+          [code128-bar->string (-> string? string?)]
           ))
 
 (require "share.rkt")
@@ -393,7 +394,7 @@
 
 (define *code128_down_margin* 15)
 
-(define (get-dimension code_length brick_width)
+(define (get-code128-dimension code_length brick_width)
   (cons
    (* (+ *quiet_zone_width* (+ (* (sub1 code_length) 11) 13) *quiet_zone_width*) brick_width)
    (* (+ *top_margin* *bar_height* *code128_down_margin*) brick_width)))
@@ -403,7 +404,7 @@
          [data_code_list (shift-compress encoded_list)]
          [checksum (code128-checksum (code->value data_code_list))]
          [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
-         [dimension (get-dimension (length code_list) brick_width)]
+         [dimension (get-code128-dimension (length code_list) brick_width)]
          [width (car dimension)]
          [height (cdr dimension)]
          [x (* (add1 *quiet_zone_width*) brick_width)]
@@ -424,3 +425,52 @@
             (loop (cdr loop_list) (+ start_x (* 11 brick_width)))))
     
     (save-bars dc file_name)))
+
+(define (code128-bar->string bar_string)
+  (foldr
+   (lambda (a b)
+     (string-append a b))
+   ""
+   (let* ([a_map (get-code128-map #:code 'A #:type 'bar->char)]
+          [b_map (get-code128-map #:code 'B #:type 'bar->char)]
+          [c_map (get-code128-map #:code 'C #:type 'bar->char)]
+          [mode_map (hash 'A a_map 'B b_map 'C c_map)])
+     (let loop ([loop_str bar_string]
+                [current_mode 'A]
+                [result_list '()])
+       (if (> (string-length loop_str) 11)
+           (if (> (string-length loop_str) 13)
+               (let ([val (hash-ref (hash-ref mode_map current_mode) (substring loop_str 0 11))])
+                 (if (string? val)
+                     (cond
+                      [(string=? val "StartA")
+                       (loop (substring loop_str 11) 'A (cons (hash-ref a_map "StartA") result_list))]
+                      [(string=? val "StartB")
+                       (loop (substring loop_str 11) 'B (cons (hash-ref b_map "StartB") result_list))]
+                      [(string=? val "StartC")
+                       (loop (substring loop_str 11) 'C (cons (hash-ref c_map "StartC") result_list))]
+                      [(string=? val "CodeA")
+                       (loop (substring loop_str 11) 'A (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))]
+                      [(string=? val "CodeB")
+                       (loop (substring loop_str 11) 'B (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))]
+                      [(string=? val "CodeC")
+                       (loop (substring loop_str 11) 'C (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))]
+                      [(and (eq? current_mode 'A) (string=? val "Shift"))
+                       (loop (substring loop_str 22)
+                             current_mode
+                             (cons
+                              (hash-ref b_map (substring loop_str 11 22))
+                              (cons (hash-ref a_map "Shift") result_list)))]
+                      [(and (eq? current_mode 'B) (string=? val "Shift"))
+                       (loop (substring loop_str 22)
+                             current_mode
+                             (cons
+                              (hash-ref a_map (substring loop_str 11 22))
+                              (cons (hash-ref b_map "Shift") result_list)))]
+                      [else
+                       (loop (substring loop_str 11) current_mode (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))])
+                   (loop (substring loop_str 11) current_mode (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))))
+               (if (= (string-length loop_str) 13)
+                   (reverse result_list)
+                   (error "invalid data")))
+           (error "invalid data"))))))
