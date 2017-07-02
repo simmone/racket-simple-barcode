@@ -6,6 +6,10 @@
 
 (require rackunit "../../lib/code128-lib.rkt")
 
+(require racket/runtime-path)
+(define-runtime-path code128_write_test1 "code128_write_test1.png")
+(define-runtime-path code128_write_test2 "code128_write_test2.png")
+
 (define test-lib
   (test-suite
    "test-code128"
@@ -89,6 +93,12 @@
     )
    
    (test-case
+    "test-get-dimension"
+    
+    (check-equal? (get-dimension 11 1) '(143 . 85))
+    )
+   
+   (test-case
     "test-code128-checksum"
     
     (check-equal? (code128-checksum '(103 48 42 42 17 18 19 35)) 54)
@@ -99,14 +109,31 @@
    (test-case
     "test-code128->bars"
     
-    (check-equal? (code128->bars 
-                   (encode-c128 "\u00111234abc"))
-                   (string-append
-                    "11010000100" "10010111100"
-                    "10111011110" "10110011100" "10001011000"
-                    "10111101110" "10010110000" "10010000110" "10000101100" 
-                    "1100011101011"))
+    (check-equal? (code128->bars '("StartA" #\u0011 "CodeC" "12" "34" "CodeB" #\a #\b #\c "73" "Stop"))
+                  (string-append
+                   "11010000100" "10010111100"
+                   "10111011110" "10110011100" "10001011000"
+                   "10111101110" "10010110000" "10010000110" "10000101100"
+                   "10000110100"
+                   "1100011101011"))
     )
+
+   (test-case
+    "test-write"
+    
+    (dynamic-wind
+        (lambda ()
+          (void)
+          )
+        (lambda ()
+          (draw-code128 "750103131130" code128_write_test1)
+          (draw-code128 "chenxiao770117" code128_write_test2)
+          )
+        (lambda ()
+          (void)
+          (delete-file code128_write_test1)
+          (delete-file code128_write_test2)
+          )))
    
    ))
 

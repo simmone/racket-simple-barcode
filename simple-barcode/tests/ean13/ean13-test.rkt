@@ -78,13 +78,11 @@
     
     (dynamic-wind
         (lambda ()
+          (void))
+        (lambda ()
           (check-exn exn:fail? (lambda () (draw-ean13 "1234567890123" ean13_write_test1)))
           (check-exn exn:fail? (lambda () (draw-ean13 "12345678901a2" ean13_write_test1)))
           (draw-ean13 "750103131130" ean13_write_test1)
-          )
-        (lambda ()
-          (void)
-;          (check-equal? (read-ean13 ean13_write_test1) "7501031311309")
           )
         (lambda ()
           (delete-file ean13_write_test1)

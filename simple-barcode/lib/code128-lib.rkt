@@ -7,6 +7,8 @@
           [shift-compress (-> list? list?)]
           [code128-checksum (-> (listof exact-nonnegative-integer?) exact-nonnegative-integer?)]
           [code128->bars (-> list? string?)]
+          [get-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
+          [draw-code128 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           ))
 
 (require "share.rkt")
@@ -229,7 +231,7 @@
                      (cons "CodeA" result_list)))])]
            [else
             (error (format "invalid char[~a]" (car loop_list)))])
-          (reverse (cons "Stop" result_list))))))
+          (reverse result_list)))))
 
 (define (shift-compress code_list)
   (let loop ([loop_list code_list]
@@ -356,58 +358,52 @@
                 [current_mode #f]
                 [result_list '()])
        (if (not (null? loop_list))
-           (if (string? (car loop_list))
-               (cond
-                [(string=? (car loop_list) "StartA")
-                 (loop (cdr loop_list) 'A (cons (hash-ref a_map "StartA") result_list))]
-                [(string=? (car loop_list) "StartB")
-                 (loop (cdr loop_list) 'B (cons (hash-ref b_map "StartB") result_list))]
-                [(string=? (car loop_list) "StartC")
-                 (loop (cdr loop_list) 'C (cons (hash-ref c_map "StartC") result_list))]
-                [(string=? (car loop_list) "CodeA")
-                 (loop (cdr loop_list) 'A (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
-                [(string=? (car loop_list) "CodeB")
-                 (loop (cdr loop_list) 'B (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
-                [(string=? (car loop_list) "CodeC")
-                 (loop (cdr loop_list) 'C (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
-                [(and (eq? current_mode 'A) (string=? (car loop_list) "Shift"))
-                 (loop (cddr loop_list)
-                       current_mode
-                       (cons
-                        (hash-ref b_map (cadr loop_list))
-                        (cons (hash-ref a_map "Shift") result_list)))]
-                [(and (eq? current_mode 'B) (string=? (car loop_list) "Shift"))
-                 (loop (cddr loop_list)
-                       current_mode
-                       (cons
-                        (hash-ref a_map (cadr loop_list))
-                        (cons (hash-ref b_map "Shift") result_list)))]
-                [(string=? (car loop_list) "Stop")
-                 (reverse (cons (hash-ref a_map "Stop") result_list))]
-                [else
-                 (loop (cdr loop_list) current_mode (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))])
-               (loop (cdr loop_list) current_mode (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list)))
+           (if (= (length loop_list) 2)
+               (reverse (cons (hash-ref c_map "Stop") (cons (hash-ref c_map (car loop_list)) result_list)))
+               (if (string? (car loop_list))
+                   (cond
+                    [(string=? (car loop_list) "StartA")
+                     (loop (cdr loop_list) 'A (cons (hash-ref a_map "StartA") result_list))]
+                    [(string=? (car loop_list) "StartB")
+                     (loop (cdr loop_list) 'B (cons (hash-ref b_map "StartB") result_list))]
+                    [(string=? (car loop_list) "StartC")
+                     (loop (cdr loop_list) 'C (cons (hash-ref c_map "StartC") result_list))]
+                    [(string=? (car loop_list) "CodeA")
+                     (loop (cdr loop_list) 'A (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
+                    [(string=? (car loop_list) "CodeB")
+                     (loop (cdr loop_list) 'B (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
+                    [(string=? (car loop_list) "CodeC")
+                     (loop (cdr loop_list) 'C (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))]
+                    [(and (eq? current_mode 'A) (string=? (car loop_list) "Shift"))
+                     (loop (cddr loop_list)
+                           current_mode
+                           (cons
+                            (hash-ref b_map (cadr loop_list))
+                            (cons (hash-ref a_map "Shift") result_list)))]
+                    [(and (eq? current_mode 'B) (string=? (car loop_list) "Shift"))
+                     (loop (cddr loop_list)
+                           current_mode
+                           (cons
+                            (hash-ref a_map (cadr loop_list))
+                            (cons (hash-ref b_map "Shift") result_list)))]
+                    [else
+                     (loop (cdr loop_list) current_mode (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))])
+                   (loop (cdr loop_list) current_mode (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))))
            (reverse result_list))))))
+
+(define *code128_down_margin* 15)
 
 (define (get-dimension code_length brick_width)
   (cons
-   (* (+ *quiet_zone_width* code_length *quiet_zone_width*) brick_width)
-   (* (+ *top_margin* *bar_height* *down_margin*) brick_width)))
+   (* (+ *quiet_zone_width* (+ (* (sub1 code_length) 11) 13) *quiet_zone_width*) brick_width)
+   (* (+ *top_margin* *bar_height* *code128_down_margin*) brick_width)))
 
 (define (draw-code128 code128 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([encoded_list (encode-c128 code128)]
-         [code_list (shift-compress encoded_list)]
-         [checksum (code128-checksum (code->value (code_list)))])
-    (draw-code128-raw 
-     (string-append
-      code_list
-      (number->string checksum)
-      file_name
-      #:color_pair color_pair
-      #:brick_width brick_width))))
-
-(define (draw-code128-raw code_list checksum file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (let* ([dimension (get-dimension brick_width)]
+         [data_code_list (shift-compress encoded_list)]
+         [checksum (code128-checksum (code->value data_code_list))]
+         [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
+         [dimension (get-dimension (length code_list) brick_width)]
          [width (car dimension)]
          [height (cdr dimension)]
          [x (* (add1 *quiet_zone_width*) brick_width)]
@@ -420,28 +416,11 @@
     (set! dc (draw-init width height #:color_pair color_pair #:brick_width brick_width))
     
     (draw-bars dc bars #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
-    
-    ;; left split
-    (draw-bars dc "101" #:x x #:y y #:bar_width brick_width #:bar_height foot_height)
 
-    ;; middle split
-    (draw-bars dc "01010" #:x (+ x (* 45 brick_width)) #:y y #:bar_width brick_width #:bar_height foot_height)
-
-    ;; right split
-    (draw-bars dc "101" #:x (+ x (* 92 brick_width)) #:y y #:bar_width brick_width #:bar_height foot_height)
-
-    ;; first char
-    (send dc draw-text (substring code_list 0 1) (- x (* 6 brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
-
-    (let loop ([loop_list (cdr (string->list code_list))]
-               [start_x (+ x (* 3 brick_width))])
+    (let loop ([loop_list (string->list code128)]
+               [start_x x])
       (when (not (null? loop_list))
-            (send dc draw-text (string (car loop_list)) (+ start_x (* 2 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
-            (if (= (length loop_list) 7)
-                (loop (cdr loop_list) (+ start_x (* 12 brick_width)))
-                (loop (cdr loop_list) (+ start_x (* 7 brick_width))))))
-
-    ;; last char
-    (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
+            (send dc draw-text (string (car loop_list)) (+ start_x (* 3 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
+            (loop (cdr loop_list) (+ start_x (* 11 brick_width)))))
     
     (save-bars dc file_name)))
