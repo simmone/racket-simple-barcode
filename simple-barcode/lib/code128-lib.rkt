@@ -444,32 +444,32 @@
                  (if (string? val)
                      (cond
                       [(string=? val "StartA")
-                       (loop (substring loop_str 11) 'A (cons (hash-ref a_map "StartA") result_list))]
+                       (loop (substring loop_str 11) 'A result_list)]
                       [(string=? val "StartB")
-                       (loop (substring loop_str 11) 'B (cons (hash-ref b_map "StartB") result_list))]
+                       (loop (substring loop_str 11) 'B result_list)]
                       [(string=? val "StartC")
-                       (loop (substring loop_str 11) 'C (cons (hash-ref c_map "StartC") result_list))]
+                       (loop (substring loop_str 11) 'C result_list)]
                       [(string=? val "CodeA")
-                       (loop (substring loop_str 11) 'A (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))]
+                       (loop (substring loop_str 11) 'A result_list)]
                       [(string=? val "CodeB")
-                       (loop (substring loop_str 11) 'B (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))]
+                       (loop (substring loop_str 11) 'B result_list)]
                       [(string=? val "CodeC")
-                       (loop (substring loop_str 11) 'C (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))]
+                       (loop (substring loop_str 11) 'C result_list)]
                       [(and (eq? current_mode 'A) (string=? val "Shift"))
                        (loop (substring loop_str 22)
                              current_mode
                              (cons
                               (hash-ref b_map (substring loop_str 11 22))
-                              (cons (hash-ref a_map "Shift") result_list)))]
+                              result_list))]
                       [(and (eq? current_mode 'B) (string=? val "Shift"))
                        (loop (substring loop_str 22)
                              current_mode
                              (cons
                               (hash-ref a_map (substring loop_str 11 22))
-                              (cons (hash-ref b_map "Shift") result_list)))]
+                              result_list))]
                       [else
-                       (loop (substring loop_str 11) current_mode (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))])
-                   (loop (substring loop_str 11) current_mode (cons (hash-ref (hash-ref mode_map current_mode) val) result_list))))
+                       (loop (substring loop_str 11) current_mode (cons val result_list))])
+                   (loop (substring loop_str 11) current_mode (cons (string val) result_list))))
                (if (= (string-length loop_str) 13)
                    (reverse result_list)
                    (error "invalid data")))
