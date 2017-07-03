@@ -14,7 +14,7 @@
           [draw-init (->* (exact-nonnegative-integer? exact-nonnegative-integer?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
           [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
           [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
-          [search-barcode-on-row (-> list? (or/c list? #f))]
+          [search-barcode-on-row (-> list? (or/c pair? #f))]
           [search-barcode (-> (listof list?) (or/c pair? #f))]
           ))
 
@@ -167,12 +167,12 @@
 (define *pattern_list* (list
                          (cons 'ean13 
                                (list 
-                                (pregexp "101[0-1]{42}01010[0-1]{42}101")))
+                                (pregexp "0101[0-1]{42}01010[0-1]{42}1010")))
                          (cons  'code128 
                                 (list 
-                                 (pregexp "11010000100.+1100011101011")
-                                 (pregexp "11010010000.+1100011101011")
-                                 (pregexp "11010011100.+1100011101011"))
+                                 (pregexp "011010000100.+11000111010110")
+                                 (pregexp "011010010000.+11000111010110")
+                                 (pregexp "011010011100.+11000111010110"))
                          )))
 
 (define (search-barcode-on-row points_row)
@@ -187,6 +187,7 @@
                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) points_row))]
                       [squashed_str 
                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
+                 (printf "~a\n" squashed_str)
                  
                  (let match-loop ([loop_pattern_list *pattern_list*])
                              (if (not (null? loop_pattern_list))
@@ -211,8 +212,9 @@
              [loop_count 1])
     (if (not (null? loop_rows))
         (let ([result (search-barcode-on-row (car loop_rows))])
-              (if result
-                  result
-                  (loop (cdr loop_rows) (add1 loop_count))))
-            #f)))
+          (printf "~a,~a\n" loop_count result)
+          (if result
+              result
+              (loop (cdr loop_rows) (add1 loop_count))))
+        #f)))
 
