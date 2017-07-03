@@ -6,10 +6,12 @@
           [code->value (-> list? list?)]
           [shift-compress (-> list? list?)]
           [code128-checksum (-> (listof exact-nonnegative-integer?) exact-nonnegative-integer?)]
+          [code128-bars-checksum (-> string? exact-nonnegative-integer?)]
           [code128->bars (-> list? string?)]
           [get-code128-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
           [draw-code128 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [code128-bar->string (-> string? string?)]
+          [code128-verify (-> string? boolean?)]
           ))
 
 (require "share.rkt")
@@ -142,7 +144,10 @@
         [(eq? type 'bar->char)
          (hash-set! result_map (list-ref rec 4) ch)]
         [(eq? type 'char->weight)
-         (hash-set! result_map ch (list-ref rec 0))])))
+         (hash-set! result_map ch (list-ref rec 0))]
+        [(eq? type 'bar->weight)
+         (hash-set! result_map (list-ref rec 4) (list-ref rec 0))]
+        )))
      *code_list*)
     result_map))
 
@@ -346,6 +351,16 @@
           sum)))
    103))
 
+(define (code128-bars-checksum bars)
+  (let* ([weight_map (get-code128-map #:code 'A #:type 'bar->weight)]
+         [code_list
+          (let loop ([loop_bars bars]
+                     [result_list '()])
+            (if (<= (string-length loop_bars) 24)
+                (reverse result_list)
+                (loop (substring loop_bars 11) (cons (hash-ref weight_map (substring loop_bars 0 11)) result_list))))])
+    (code128-checksum code_list)))
+
 (define (code128->bars code_list)
   (foldr
    (lambda (a b)
@@ -439,7 +454,7 @@
                 [current_mode 'A]
                 [result_list '()])
        (if (> (string-length loop_str) 11)
-           (if (> (string-length loop_str) 13)
+           (if (> (string-length loop_str) 24)
                (let ([val (hash-ref (hash-ref mode_map current_mode) (substring loop_str 0 11))])
                  (if (string? val)
                      (cond
@@ -470,7 +485,14 @@
                       [else
                        (loop (substring loop_str 11) current_mode (cons val result_list))])
                    (loop (substring loop_str 11) current_mode (cons (string val) result_list))))
-               (if (= (string-length loop_str) 13)
+               (if (= (string-length loop_str) 24)
                    (reverse result_list)
                    (error "invalid data")))
            (error "invalid data"))))))
+
+(define (code128-verify bars)
+  (let* ([ch_map (get-code128-map #:code 'C #:type 'bar->char)]
+         [checksum_bar (substring bars (- (string-length bars) 24) (- (string-length bars) 13))]
+         [checksum (hash-ref ch_map checksum_bar)]
+         [actual_checksum (code128-bars-checksum bars)])
+    (= (string->number checksum) actual_checksum)))

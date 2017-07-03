@@ -25,7 +25,9 @@
               [(eq? type 'ean13)
                (ean13-bar->string bars)]
               [(eq? type 'code128)
-               (code128-bar->string bars)]
+               (if (code128-verify bars)
+                   (code128-bar->string bars)
+                   "")]
               [else
                ""]))
            ""))))
