@@ -28,16 +28,15 @@ there is also a complete read and write example on github:@link["https://github.
               [#:color_pair color_pair pair? '("black" . "white")]
               [#:brick_width brick_width exact-nonnegative-integer? 2])
             boolean?]{
-code is a 12 digit string            
+support code_type: 'ean13, 'code128
 }
 
 @section{Read}
 
-read ean13 code from a picture file.
+read barcode from a picture file.
 
 @defproc[(barcode-read
               [barcode_file_path path-string?]
-              [#:code_type code_type symbol? 'ean13]
               )
             string?]{
 }
@@ -65,4 +64,7 @@ read ean13 code from a picture file.
   (barcode-read "barcode_ean13_color.png")
 
   (barcode-read "barcode_ean13_trans.png"))
+
+(barcode-write "chenxiao770117" "barcode_code128.png" #:code_type 'code128)
+(printf "~a\n" (barcode-read "barcode_code128.png"))
 }

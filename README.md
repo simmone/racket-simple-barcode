@@ -27,6 +27,9 @@ A Barcode reader and writer for Racket
     (barcode-read "barcode_ean13_color.png")
 
     (barcode-read "barcode_ean13_trans.png"))
+
+  (barcode-write "chenxiao770117" "barcode_code128.png" #:code_type 'code128)
+  (printf "~a\n" (barcode-read "barcode_code128.png"))
   
 ```
 
@@ -43,3 +46,10 @@ set transparent background:<br>
 ![ScreenShot](simple-barcode/example/barcode_ean13_trans.png)
 
 7501031311309,7501031311309,7501031311309,7501031311309
+
+code128, brick_width = 2:<br>
+![ScreenShot](simple-barcode/example/barcode_code128.png)
+
+chenxiao770117
+
+

@@ -434,7 +434,7 @@
     (draw-bars dc bars #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
 
     (let loop ([loop_list (string->list code128)]
-               [start_x x])
+               [start_x (+ x (* 11 brick_width))])
       (when (not (null? loop_list))
             (send dc draw-text (string (car loop_list)) (+ start_x (* 3 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
             (loop (cdr loop_list) (+ start_x (* 11 brick_width)))))
@@ -482,6 +482,12 @@
                              (cons
                               (hash-ref a_map (substring loop_str 11 22))
                               result_list))]
+                      [(or
+                        (string=? val "FNC1")
+                        (string=? val "FNC2")
+                        (string=? val "FNC3")
+                        (string=? val "FNC4"))
+                       (loop (substring loop_str 11) current_mode (cons "" result_list))]
                       [else
                        (loop (substring loop_str 11) current_mode (cons val result_list))])
                    (loop (substring loop_str 11) current_mode (cons (string val) result_list))))
@@ -490,9 +496,20 @@
                    (error "invalid data")))
            (error "invalid data"))))))
 
+(define (get-checksum checksum)
+  (cond
+   [(string=? checksum "CodeB")
+    "100"]
+   [(string=? checksum "CodeA")
+    "101"]
+   [(string=? checksum "FNC1")
+    "102"]
+   [else
+    checksum]))
+
 (define (code128-verify bars)
   (let* ([ch_map (get-code128-map #:code 'C #:type 'bar->char)]
          [checksum_bar (substring bars (- (string-length bars) 24) (- (string-length bars) 13))]
-         [checksum (hash-ref ch_map checksum_bar)]
+         [checksum (get-checksum (hash-ref ch_map checksum_bar))]
          [actual_checksum (code128-bars-checksum bars)])
     (= (string->number checksum) actual_checksum)))

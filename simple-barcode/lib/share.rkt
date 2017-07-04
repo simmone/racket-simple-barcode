@@ -196,7 +196,7 @@
 
 (define (search-barcode-on-row points_row)
   (let loop ([loop_width 1])
-    (if (> loop_width 10)
+    (if (> (* loop_width 30) (length points_row))
         #f
         (let ([result
                (let* ([squashed_line (squash-points points_row loop_width)]
@@ -207,8 +207,6 @@
                       [squashed_str 
                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
 
-                 (printf "~a\n" squashed_str)
-                 
                  (let match-loop ([loop_pattern_list *pattern_list*])
                              (if (not (null? loop_pattern_list))
                                  (let* ([mode (caar loop_pattern_list)]
@@ -232,7 +230,6 @@
              [loop_count 1])
     (if (not (null? loop_rows))
         (let ([result (search-barcode-on-row (car loop_rows))])
-          (printf "~a,~a\n" loop_count result)
           (if result
               result
               (loop (cdr loop_rows) (add1 loop_count))))

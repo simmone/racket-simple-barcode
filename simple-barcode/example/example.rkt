@@ -1,8 +1,6 @@
 #lang racket
 
-;(require simple-barcode)
-
-(require "../main.rkt")
+(require simple-barcode)
 
 (barcode-write "750103131130" "barcode_ean13.png")
 
@@ -20,4 +18,7 @@
   (barcode-read "barcode_ean13_color.png")
 
   (barcode-read "barcode_ean13_trans.png"))
+
+(barcode-write "chenxiao770117" "barcode_code128.png" #:code_type 'code128)
+(printf "~a\n" (barcode-read "barcode_code128.png"))
 
