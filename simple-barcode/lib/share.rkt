@@ -151,9 +151,9 @@
       (map
        (lambda (col)
          (cond
-          [(= col 765)
+          [(> col 565)
            0]
-          [(< col 100)
+          [(< col 200)
            1]
           [else
            #f]))
