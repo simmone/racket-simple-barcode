@@ -6,6 +6,7 @@
           [points->pic (-> (listof list?) path-string? hash? any)]
           [find-threshold (-> list? exact-nonnegative-integer?)]
           [points->bw (-> list? exact-nonnegative-integer? list?)]
+          [points->strict-bw (-> list? list?)]
           [squash-points (-> list? exact-nonnegative-integer? pair?)]
           [*quiet_zone_width* exact-nonnegative-integer?]
           [*top_margin* exact-nonnegative-integer?]
@@ -141,6 +142,24 @@
       row))
    points_list))
 
+(define (points->strict-bw points_list)
+  (map
+   (lambda (row)
+     (filter
+      (lambda (rec)
+        rec)
+      (map
+       (lambda (col)
+         (cond
+          [(= col 765)
+           0]
+          [(< col 100)
+           1]
+          [else
+           #f]))
+       row)))
+   points_list))
+
 (define (squash-points points width)
   (let ([min_width (ceiling (* width 0.5))])
     (let loop ([loop_points points]
@@ -167,12 +186,12 @@
 (define *pattern_list* (list
                          (cons 'ean13 
                                (list 
-                                (pregexp "0101[0-1]{42}01010[0-1]{42}1010")))
+                                (pregexp "101[0-1]{42}01010[0-1]{42}101")))
                          (cons  'code128 
                                 (list 
-                                 (pregexp "011010000100.+11000111010110")
-                                 (pregexp "011010010000.+11000111010110")
-                                 (pregexp "011010011100.+11000111010110"))
+                                 (pregexp "11010000100.+1100011101011")
+                                 (pregexp "11010010000.+1100011101011")
+                                 (pregexp "11010011100.+1100011101011"))
                          )))
 
 (define (search-barcode-on-row points_row)
@@ -187,6 +206,7 @@
                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) points_row))]
                       [squashed_str 
                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
+
                  (printf "~a\n" squashed_str)
                  
                  (let match-loop ([loop_pattern_list *pattern_list*])
@@ -217,4 +237,3 @@
               result
               (loop (cdr loop_rows) (add1 loop_count))))
         #f)))
-

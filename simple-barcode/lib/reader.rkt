@@ -19,15 +19,23 @@
      (set! step3_bw_points (points->bw step1_points_list step2_threshold))
      (let ([search_result (search-barcode step3_bw_points)])
        (if search_result
-           (let ([type (car search_result)]
-                 [bars (cdr search_result)])
-             (cond
-              [(eq? type 'ean13)
-               (ean13-bar->string bars)]
-              [(eq? type 'code128)
-               (if (code128-verify bars)
-                   (code128-bar->string bars)
-                   "")]
-              [else
-               ""]))
-           ""))))
+           (deal-result search_result)
+           (let* ([strict_points (points->strict-bw step1_points_list)]
+                  [search_result_twice (search-barcode strict_points)])
+             (if search_result_twice
+                 (deal-result search_result_twice)
+                 ""))))))
+
+(define (deal-result result)
+  (let ([type (car result)]
+        [bars (cdr result)])
+    (cond
+     [(eq? type 'ean13)
+      (ean13-bar->string bars)]
+     [(eq? type 'code128)
+      (if (code128-verify bars)
+          (code128-bar->string bars)
+          "")]
+     [else
+      ""])))
+

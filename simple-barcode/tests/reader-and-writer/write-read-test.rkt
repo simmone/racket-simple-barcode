@@ -38,7 +38,8 @@
 ;    (check-equal? (barcode-read example_ean13_trans_file) "7501031311309")
 ;
 ;    (check-equal? (barcode-read extern_ean13_test1) "5901234123457")
-    (check-equal? (barcode-read extern_code128_test2) "RI 476 394 652 CH")
+    (check-equal? (barcode-read extern_code128_test1) "Wikipedia")
+;    (check-equal? (barcode-read extern_code128_test2) "Barcode World")
     )
 
 ;   (test-case
