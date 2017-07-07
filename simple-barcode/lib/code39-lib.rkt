@@ -53,35 +53,74 @@
     (0  "*"  "100101101101")
     ))
 
-NUL %U SP Space @ %V ` %W
-SOH $A ! /A A A a +A
-STX $B " /B B B b +B
-ETX $C # /C C C c +C
-EOT $D $ /D D D d +D
-ENQ $E % /E E E e +E
-ACK $F & /F F F f +F
-BEL $G ' /G G G g +G
-BS $H ( /H H H H H
-HT $I ) /I I I i +I
-LF $J * /J J J j +J
-VT $K + /K K K k +K
-FF $L , /L L L l +L
-CR $M - - M M m +M
-SO $N . . N N n +N
-SI $O / /O O O o +O
-DLE $P 0 0 P P p +P
-DC1 $Q 1 1 Q Q q +Q
-DC2 $R 2 2 R R r +R
-DC3 $S 3 3 S S s +S
-DC4 $T 4 4 T T t +T
-NAK $U 5 5 U U u +U
-SYN $V 6 6 V V v +V
-ETB $W 7 7 W W w +W
-CAN $X 8 8 X X x +X
-EM $Y 9 9 Y Y y +Y
-SUB $Z : /Z Z Z z +Z
-ESC %A ; %F [ %K { %P
-FS %B << %G \ %L | %Q
-GS %C = %H ] %M } %R
-RS %D > %I ^ %N ~ %S
-YS %E ? %J _ %O DEL %T, %X, %Y, %Z
+(define *ascii_map*
+  '#hash(
+         #\u0000 NUL %U 
+         #\u0001 SOH $A 
+         #\u0002 STX $B
+         #\u0003 ETX $C
+         #\u0004 EOT $D
+         #\u0005 ENQ $E
+         #\u0006 ACK $F
+         #\u0007 BEL $G
+         #\u0008 BS $H 
+         #\u0009 HT $I
+         #\u000a LF $J
+         #\u000b VT $K
+         #\u000c FF $L
+         #\u000d CR $M
+         #\u000e SO $N
+         #\u000f SI $O
+         #\u0010 DLE $P
+         #\u0011 DC1 $Q
+         #\u0012 DC2 $R
+         #\u0013 DC3 $S
+         #\u0014 DC4 $T
+         #\u0015 NAK $U
+         #\u0016 SYN $V
+         #\u0017 ETB $W
+         #\u0018 CAN $X
+         #\u0019 EM $Y
+         #\u001a SUB $Z
+         #\u001b ESC %A
+         #\u001c FS %B
+         #\u001d GS %C
+         #\u001e RS %D
+         #\u001f YS %E
+         #\u0020 SP Space
+         #\u0021 ! /A 
+         #\u0022 " /B
+         #\u0023 # /C
+         #\u0024 $ /D
+         #\u0025 % /E
+ & /F F F f +F
+ ' /G G G g +G
+( /H H H H H
+ ) /I I I i +I
+ * /J J J j +J
+ + /K K K k +K
+ , /L L L l +L
+ - - M M m +M
+ . . N N n +N
+ / /O O O o +O
+ 0 0 P P p +P
+ 1 1 Q Q q +Q
+ 2 2 R R r +R
+ 3 3 S S s +S
+ 4 4 T T t +T
+ 6 6 V V v +V
+ 7 7 W W w +W
+ 8 8 X X x +X
+ 9 9 Y Y y +Y
+ : /Z Z Z z +Z
+ ; %F [ %K { %P
+ << %G \ %L | %Q
+ = %H ] %M } %R
+ > %I ^ %N ~ %S
+ ? %J _ %O DEL %T, %X, %Y, %Z
+ @ %V ` %W
+A A a +A
+ B B b +B
+ C C c +C
+ D D d +D
+ E E e +E
