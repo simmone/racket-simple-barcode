@@ -184,3 +184,50 @@
     (#\u007e "%S")
     (#\u007f "%T,%X,%Y,%Z")
     ))
+
+(define (get-code39-map #:type type)
+  (let ([basic_map (make-hash)]
+        [
+        [result_map (make-hash)])
+    (for-each
+     (lambda (rec)
+       (cond
+         [(eq? type 'char->bar)
+          (hash-set! basic_map (list-ref rec 1) (list-ref rec 2))]
+         [(eq? type 'bar->char)
+          (hash-set! basic_map (list-ref rec 2) (list-ref rec 1))]
+         ))
+     *code_list*)
+              
+    (for-each
+     (lambda (rec)
+       (cond
+        [(eq? type 'char->bar)
+         (hash-set! result_map (first rec) (chars->bars (second rec) basic_map))]
+        [(eq? type 'bar->char)
+         (hash-set! result_map (first rec) (bars->char (second rec) basic_map))]
+        ))
+     *ascii_table*)
+    result_map))
+
+(define (chars->bars chars char_bar_map)
+  (foldr
+   (lambda (a_bar b_bar)
+     (string-append a_bar b_bar))
+   ""
+   (map
+    (lambda (ch)
+      (hash-ref char_bar_map ch))
+    (string->list (car (regexp-split #rx"," chars))))))
+
+(define (bars->char bars bar_char_map)
+  (foldr
+    (lambda (a_ch b_ch)
+     (string-append a_ch b_ch))
+    ""
+   (map
+    (lambda (ch)
+      (hash-ref char_bar_map ch))
+    (string->list (car (regexp-split #rx"," chars))))))
+
+
