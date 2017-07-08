@@ -14,19 +14,20 @@
     "test-get-code39-map"
     
     (let (
-          [code_a_char_bar_map (get-code39-map #:code 'A #:type 'char->bar)]
-          [code_a_char_weight_map (get-code39-map #:code 'A #:type 'char->weight)]
-          [code_a_bar_char_map (get-code39-map #:code 'A #:type 'bar->char)]
+          [char_bar_map (get-code39-map #:type 'char->bar)]
+          [bar_char_map (get-code39-map #:type 'bar->char)]
           )
 
-      (check-equal? (hash-count code_a_char_bar_map) 106)
+      (check-equal? (hash-count char_bar_map) 128)
+      (check-equal? (hash-ref char_bar_map #\7) "101001011011")
+      (check-equal? (hash-ref char_bar_map #\.)  "110010101101")
+      (check-equal? (hash-ref char_bar_map #\u0002) "100100100101101101001011")
 
-      (check-equal? (hash-ref code_a_char_bar_map #\u0020) "11011001100")
-      (check-equal? (hash-ref code_a_char_weight_map #\u0020) 0)
-      (check-equal? (hash-ref code_a_char_weight_map #\u0011) 81)
-      (check-equal? (hash-ref code_a_bar_char_map "11011001100") #\u0020)
+      (check-equal? (hash-count bar_char_map) 128)
+      (check-equal? (hash-ref bar_char_map "101001011011") #\7)
+      (check-equal? (hash-ref bar_char_map "110010101101") #\.)
+      (check-equal? (hash-ref bar_char_map "100100100101101101001011") #\u0002)
       ))
-
    
    ))
 
