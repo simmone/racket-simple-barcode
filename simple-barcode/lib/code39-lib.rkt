@@ -25,6 +25,7 @@
     (14 #\E  "110101100101")
     (15 #\F  "101101100101")
     (16 #\G  "101010011011")
+    (17 #\H  "110101001101")
     (18 #\I  "101101001101")
     (19 #\J  "101011001101")
     (20 #\K  "110101010011")
@@ -186,48 +187,50 @@
     ))
 
 (define (get-code39-map #:type type)
-  (let ([basic_map (make-hash)]
-        [
+  (let ([char_bar_map (make-hash)]
         [result_map (make-hash)])
     (for-each
      (lambda (rec)
-       (cond
-         [(eq? type 'char->bar)
-          (hash-set! basic_map (list-ref rec 1) (list-ref rec 2))]
-         [(eq? type 'bar->char)
-          (hash-set! basic_map (list-ref rec 2) (list-ref rec 1))]
-         ))
+       (hash-set! char_bar_map (list-ref rec 1) (list-ref rec 2)))
      *code_list*)
-              
+
     (for-each
      (lambda (rec)
        (cond
         [(eq? type 'char->bar)
-         (hash-set! result_map (first rec) (chars->bars (second rec) basic_map))]
+         (chars->bars (first rec) (second rec) char_bar_map result_map)]
         [(eq? type 'bar->char)
-         (hash-set! result_map (first rec) (bars->char (second rec) basic_map))]
+         (bars->chars (first rec) (second rec) char_bar_map result_map)]
         ))
      *ascii_table*)
     result_map))
 
-(define (chars->bars chars char_bar_map)
-  (foldr
-   (lambda (a_bar b_bar)
-     (string-append a_bar b_bar))
-   ""
-   (map
-    (lambda (ch)
-      (hash-ref char_bar_map ch))
-    (string->list (car (regexp-split #rx"," chars))))))
+(define (chars->bars ch chars char_bar_map result_map) 
+  (let* ([first_chars (car (regexp-split #rx"," chars))]
+         [bar_list
+          (map
+           (lambda (ch)
+             (hash-ref char_bar_map ch))
+           (string->list first_chars))])
+    (hash-set! result_map ch
+               (if (= (length bar_list) 2)
+                   (string-append (first bar_list) "0" (second bar_list))
+                   (first bar_list)))))
 
-(define (bars->char bars bar_char_map)
-  (foldr
-    (lambda (a_ch b_ch)
-     (string-append a_ch b_ch))
-    ""
-   (map
-    (lambda (ch)
-      (hash-ref char_bar_map ch))
-    (string->list (car (regexp-split #rx"," chars))))))
+(define (bars->chars ch chars char_bar_map result_map)
+  (for-each
+   (lambda (char_list)
+     (hash-set! result_map
+                (foldr
+                 (lambda (a_ch b_ch)
+                   (string-append (hash-ref char_bar_map a_ch "") (hash-ref char_bar_map b_ch "")))
+                 "0"
+                 char_list)
+                ch))
+  (map
+   (lambda (rec)
+     (string->list rec))
+   (regexp-split #rx"," chars))))
+   
 
 
