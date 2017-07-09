@@ -2,6 +2,7 @@
 
 (provide (contract-out
           [get-code39-map (-> #:type symbol? hash?)]
+          [encode-c39 (-> string? string?)]
           ))
 
 (require "share.rkt")
@@ -230,4 +231,13 @@
      (string->list rec))
    (regexp-split #rx"," chars))))
 
-
+(define (encode-c39 code)
+  (let ([char_bar_map (get-code39-map #:type 'char->bar)])
+    (string-append
+     "100101101101" "0"
+     (foldr
+      (lambda (a b)
+        (string-append (hash-ref char_bar_map a a) "0" (hash-ref char_bar_map b b)))
+      ""
+      (string->list code))
+     "100101101101")))
