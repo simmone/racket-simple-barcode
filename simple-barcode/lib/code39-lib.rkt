@@ -46,7 +46,7 @@
     (35 #\Z  "100110110101")
     (36 #\-  "100101011011")
     (37 #\.  "110010101101")
-    (38 #\   "110101001101")
+    (38 #\   "100110101101")
     (39 #\$  "100100100101")
     (40 #\/  "100100101001")
     (41 #\+  "100101001001")
@@ -220,17 +220,14 @@
 (define (bars->chars ch chars char_bar_map result_map)
   (for-each
    (lambda (char_list)
-     (hash-set! result_map
-                (foldr
-                 (lambda (a_ch b_ch)
-                   (string-append (hash-ref char_bar_map a_ch "") (hash-ref char_bar_map b_ch "")))
-                 "0"
-                 char_list)
-                ch))
+     (let ([bars
+            (if (= (length char_list) 2)
+                (string-append (hash-ref char_bar_map (first char_list) "") "0" (hash-ref char_bar_map (second char_list) ""))
+                (hash-ref char_bar_map (first char_list)))])
+       (hash-set! result_map bars ch)))
   (map
    (lambda (rec)
      (string->list rec))
    (regexp-split #rx"," chars))))
-   
 
 

@@ -27,12 +27,12 @@
       (check-equal? (hash-count bar_char_map) 131)
       (check-equal? (hash-ref bar_char_map "101001011011") #\7)
       (check-equal? (hash-ref bar_char_map "110010101101") #\.)
-      (check-equal? (hash-ref bar_char_map "1001001001010101011011001") #\u0002)
+      (check-equal? (hash-ref bar_char_map "1001001001010101101001011") #\u0002)
 
-      (check-equal? (hash-ref bar_char_map "1001001001010101011011001") #\u007f)
-      (check-equal? (hash-ref bar_char_map "1001001001010100101101011") #\u007f)
-      (check-equal? (hash-ref bar_char_map "1001001001010110010110101") #\u007f)
-      (check-equal? (hash-ref bar_char_map "1001001001010100110110101") #\u007f)
+      (check-equal? (hash-ref bar_char_map "1010010010010101011011001") #\u007f)
+      (check-equal? (hash-ref bar_char_map "1010010010010100101101011") #\u007f)
+      (check-equal? (hash-ref bar_char_map "1010010010010110010110101") #\u007f)
+      (check-equal? (hash-ref bar_char_map "1010010010010100110110101") #\u007f)
       ))
    
    ))
