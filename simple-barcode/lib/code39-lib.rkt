@@ -2,7 +2,9 @@
 
 (provide (contract-out
           [get-code39-map (-> #:type symbol? hash?)]
-          [encode-c39 (-> string? string?)]
+          [code39->bars (-> string? string?)]
+          [get-code39-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
+          [draw-code39 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           ))
 
 (require "share.rkt")
@@ -231,7 +233,7 @@
      (string->list rec))
    (regexp-split #rx"," chars))))
 
-(define (encode-c39 code)
+(define (code39->bars code)
   (let ([char_bar_map (get-code39-map #:type 'char->bar)])
     (string-append
      "100101101101" "0"
@@ -241,3 +243,50 @@
       ""
       (string->list code))
      "100101101101")))
+
+(define (get-code-length bars_length)
+  (/ (add1 bars_length) 13))
+
+(define *code39_bars_length* 12)
+
+(define (get-code39-dimension bars_length brick_width)
+  (cons
+   (* (+ *quiet_zone_width* bars_length *quiet_zone_width*) brick_width)
+   (* (+ *top_margin* *bar_height* *code_down_margin*) brick_width)))
+
+(define (draw-code39 code39 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+  (let* ([bars (code39->bars code39)]
+         [dimension (get-code39-dimension (string-length bars) brick_width)]
+         [width (car dimension)]
+         [height (cdr dimension)]
+         [x (* *quiet_zone_width* brick_width)]
+         [y (* (add1 *top_margin*) brick_width)]
+         [bar_height (* brick_width *bar_height*)]
+         [foot_height (* brick_width *bar_height*)]
+         [dc #f])
+    
+    (set! dc (draw-init width height #:color_pair color_pair #:brick_width brick_width))
+    
+    (draw-bars dc bars #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
+
+    (let loop ([loop_list (string->list (string-append "*" code39 "*"))]
+               [start_x x])
+      (when (not (null? loop_list))
+            (loop (cdr loop_list) (+ start_x (* (add1 *code39_bars_length*) brick_width)))))
+    
+    (save-bars dc file_name)))
+
+(define (code39-checksum value_list)
+  (modulo
+   (+
+    (car value_list)
+    (let loop ([loop_list (cdr value_list)]
+               [index 1]
+               [sum 0])
+      (if (not (null? loop_list))
+          (loop
+           (cdr loop_list)
+           (add1 index)
+           (+ sum (* (car loop_list) index)))
+          sum)))
+   103))

@@ -6,6 +6,10 @@
 
 (require rackunit "../../lib/code39-lib.rkt")
 
+(require racket/runtime-path)
+(define-runtime-path code39_write_test1 "code39_write_test1.png")
+(define-runtime-path code39_write_test2 "code39_write_test2.png")
+
 (define test-lib
   (test-suite
    "test-code39"
@@ -36,9 +40,9 @@
       ))
 
    (test-case
-    "test-encode-c39"
+    "test-code39->bars"
 
-    (check-equal? (encode-c39 "CHEN")
+    (check-equal? (code39->bars "CHEN")
                   (string-append
                    "100101101101" "0"
                    "110110100101" "0"
@@ -47,7 +51,7 @@
                    "101011010011" "0"
                    "100101101101"))
 
-    (check-equal? (encode-c39 "chen")
+    (check-equal? (code39->bars "chen")
                   (string-append
                    "100101101101" "0"
                    "100101001001" "0" "110110100101" "0"
@@ -56,6 +60,31 @@
                    "100101001001" "0" "101011010011" "0"
                    "100101101101"))
     )
+   
+   (test-case
+    "test-get-code39-dimension"
+    
+    (check-equal? (get-code39-dimension 77 1) '(97 . 85))
+
+    (check-equal? (get-code39-dimension 77 2) '(194 . 170))
+    )
+
+   (test-case
+    "test-write"
+    
+    (dynamic-wind
+        (lambda ()
+          (void)
+          )
+        (lambda ()
+          (draw-code39 "CHEN" code39_write_test1)
+          (draw-code39 "chenxiao" code39_write_test2)
+          )
+        (lambda ()
+          (void)
+;          (delete-file code39_write_test1)
+;          (delete-file code39_write_test2)
+          )))
 
    ))
 

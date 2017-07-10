@@ -138,11 +138,12 @@
      "000")))
 
 (define *foot_height* 7)
+(define *ean13_bars_length* 7)
 
 (define (get-ean13-dimension brick_width)
   (cons
-   (* (+ *quiet_zone_width* 3 3 (* 6 7) 5 (* 6 7) 3 *quiet_zone_width*) brick_width)
-   (* (+ *top_margin* *bar_height* *down_margin*) brick_width)))
+   (* (+ *quiet_zone_width* 3 3 (* 6 *ean13_bars_length*) 5 (* 6 *ean13_bars_length*) 3 *quiet_zone_width*) brick_width)
+   (* (+ *top_margin* *bar_height* *ean13_down_margin*) brick_width)))
 
 (define (draw-ean13 ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (if (regexp-match #px"^[0-9]{12}$" ean13)
@@ -187,9 +188,9 @@
                [start_x (+ x (* 3 brick_width))])
       (when (not (null? loop_list))
             (send dc draw-text (string (car loop_list)) (+ start_x (* 2 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
-            (if (= (length loop_list) 7)
+            (if (= (length loop_list) *ean13_bars_length*)
                 (loop (cdr loop_list) (+ start_x (* 12 brick_width)))
-                (loop (cdr loop_list) (+ start_x (* 7 brick_width))))))
+                (loop (cdr loop_list) (+ start_x (* *ean13_bars_length* brick_width))))))
 
     ;; last char
     (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))

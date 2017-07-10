@@ -407,12 +407,12 @@
                    (loop (cdr loop_list) current_mode (cons (hash-ref (hash-ref mode_map current_mode) (car loop_list)) result_list))))
            (reverse result_list))))))
 
-(define *code128_down_margin* 15)
+(define *code128_bars_length* 11)
 
 (define (get-code128-dimension code_length brick_width)
   (cons
-   (* (+ *quiet_zone_width* (+ (* (sub1 code_length) 11) 13) *quiet_zone_width*) brick_width)
-   (* (+ *top_margin* *bar_height* *code128_down_margin*) brick_width)))
+   (* (+ *quiet_zone_width* (+ (* (sub1 code_length) *code128_bars_length*) 13) *quiet_zone_width*) brick_width)
+   (* (+ *top_margin* *bar_height* *code_down_margin*) brick_width)))
 
 (define (draw-code128 code128 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([encoded_list (encode-c128 code128)]
@@ -434,10 +434,10 @@
     (draw-bars dc bars #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
 
     (let loop ([loop_list (string->list code128)]
-               [start_x (+ x (* 11 brick_width))])
+               [start_x (+ x (* *code128_bars_length* brick_width))])
       (when (not (null? loop_list))
             (send dc draw-text (string (car loop_list)) (+ start_x (* 3 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
-            (loop (cdr loop_list) (+ start_x (* 11 brick_width)))))
+            (loop (cdr loop_list) (+ start_x (* *code128_bars_length* brick_width)))))
     
     (save-bars dc file_name)))
 

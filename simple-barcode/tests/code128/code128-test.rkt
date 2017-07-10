@@ -165,8 +165,7 @@
           (draw-code128 "chenxiao770117" code128_write_test2)
           )
         (lambda ()
-          (void)
-          (delete-file code128_write_test1)
+;          (delete-file code128_write_test1)
           (delete-file code128_write_test2)
           )))
    

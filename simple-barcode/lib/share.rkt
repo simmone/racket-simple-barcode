@@ -10,8 +10,10 @@
           [squash-points (-> list? exact-nonnegative-integer? pair?)]
           [*quiet_zone_width* exact-nonnegative-integer?]
           [*top_margin* exact-nonnegative-integer?]
-          [*down_margin* exact-nonnegative-integer?]
+          [*ean13_down_margin* exact-nonnegative-integer?]
+          [*code_down_margin* exact-nonnegative-integer?]
           [*bar_height* exact-nonnegative-integer?]
+          [*font_size* exact-nonnegative-integer?]
           [draw-init (->* (exact-nonnegative-integer? exact-nonnegative-integer?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
           [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
           [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
@@ -24,7 +26,8 @@
 (define *quiet_zone_width* 10)
 (define *bar_height* 60)
 (define *top_margin* 10)
-(define *down_margin* 20)
+(define *ean13_down_margin* 20)
+(define *code_down_margin* 15)
 (define *font_size* 5)
 
 (define (draw-init width height #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
