@@ -94,9 +94,8 @@
           (draw-code39 "chenxiao" code39_write_test2 #:brick_width 5)
           )
         (lambda ()
-          (void)
-;          (delete-file code39_write_test1)
-;          (delete-file code39_write_test2)
+          (delete-file code39_write_test1)
+          (delete-file code39_write_test2)
           )))
 
    ))

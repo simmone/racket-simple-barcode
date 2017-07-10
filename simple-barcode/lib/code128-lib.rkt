@@ -433,12 +433,8 @@
     
     (draw-bars dc bars #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
 
-    (let loop ([loop_list (string->list code128)]
-               [start_x (+ x (* *code128_bars_length* brick_width))])
-      (when (not (null? loop_list))
-            (send dc draw-text (string (car loop_list)) (+ start_x (* 3 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
-            (loop (cdr loop_list) (+ start_x (* *code128_bars_length* brick_width)))))
-    
+    (send dc draw-text (regexp-replace* #rx"(.)" code128 "\\  ") (+ x (* (+ *code128_bars_length* 3) brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
+   
     (save-bars dc file_name)))
 
 (define (code128-bar->string bar_string)
