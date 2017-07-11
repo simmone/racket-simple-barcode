@@ -186,16 +186,20 @@
               (cons (reverse (cons last_value result_list)) (reverse (cons last_index index_list)))
               (cons (reverse result_list) (reverse index_list)))))))
 
-(define *pattern_list* (list
-                         (cons 'ean13 
-                               (list 
-                                (pregexp "101[0-1]{42}01010[0-1]{42}101")))
-                         (cons  'code128 
-                                (list 
-                                 (pregexp "11010000100.+1100011101011")
-                                 (pregexp "11010010000.+1100011101011")
-                                 (pregexp "11010011100.+1100011101011"))
-                         )))
+(define *pattern_map* 
+  '#hash(
+         ('code39 .
+                  (list 
+                   (pregexp "1001011011010.+0100101101101")))
+         ('ean13 .
+                 (list 
+                  (pregexp "101[0-1]{42}01010[0-1]{42}1019")))
+         ('code128 .
+                   (list 
+                    (pregexp "11010000100.+1100011101011")
+                    (pregexp "11010010000.+1100011101011")
+                    (pregexp "11010011100.+1100011101011")))
+         ))
 
 (define (search-barcode-on-row points_row)
   (let loop ([loop_width 1])
@@ -209,7 +213,7 @@
                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) points_row))]
                       [squashed_str 
                        (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
-
+                 
                  (let match-loop ([loop_pattern_list *pattern_list*])
                              (if (not (null? loop_pattern_list))
                                  (let* ([mode (caar loop_pattern_list)]

@@ -9,6 +9,7 @@
 (require racket/runtime-path)
 (define-runtime-path code39_write_test1 "code39_write_test1.png")
 (define-runtime-path code39_write_test2 "code39_write_test2.png")
+(define-runtime-path code39_write_test3 "code39_write_test3.png")
 
 (define test-lib
   (test-suite
@@ -20,9 +21,21 @@
     (let (
           [basic_char_bar_map (get-code39-map #:type 'basic_char->bar)]
           [basic_bar_char_map (get-code39-map #:type 'basic_bar->char)]
+          [basic_char_value_map (get-code39-map #:type 'basic_char->value)]
+          [basic_value_char_map (get-code39-map #:type 'basic_value->char)]
           [extend_char_chars_map (get-code39-map #:type 'extend_char->chars)]
           [extend_chars_char_map (get-code39-map #:type 'extend_chars->char)]
           )
+
+      (check-equal? (hash-count basic_char_value_map) 44)
+      (check-equal? (hash-ref basic_char_value_map #\0) 0)
+      (check-equal? (hash-ref basic_char_value_map #\F) 15)
+      (check-equal? (hash-ref basic_char_value_map #\%) 42)
+
+      (check-equal? (hash-count basic_value_char_map) 44)
+      (check-equal? (hash-ref basic_value_char_map 0) #\0)
+      (check-equal? (hash-ref basic_value_char_map 15) #\F)
+      (check-equal? (hash-ref basic_value_char_map 42) #\%)
 
       (check-equal? (hash-count basic_char_bar_map) 44)
       (check-equal? (hash-ref basic_char_bar_map #\7) "101001011011")
@@ -53,9 +66,9 @@
     )
 
    (test-case
-    "test-code39-groups->bars"
+    "test-code39->bars"
 
-    (check-equal? (code39-groups->bars '("C" "H" "E" "N"))
+    (check-equal? (code39->bars "CHEN")
                   (string-append
                    "100101101101" "0"
                    "110110100101" "0"
@@ -64,7 +77,7 @@
                    "101011010011" "0"
                    "100101101101"))
 
-    (check-equal? (code39-groups->bars '("+C" "+H" "+E" "+N"))
+    (check-equal? (code39->bars "+C+H+E+N")
                   (string-append
                    "100101101101" "0"
                    "100101001001" "0" "110110100101" "0"
@@ -90,13 +103,51 @@
           (void)
           )
         (lambda ()
-          (draw-code39 "CHEN" code39_write_test1 #:brick_width 5)
-          (draw-code39 "chenxiao" code39_write_test2 #:brick_width 5)
+          (draw-code39 "CHEN" code39_write_test1)
+          (draw-code39 "chenxiao" code39_write_test2)
+          (draw-code39-checksum "CHEN" code39_write_test3)
           )
         (lambda ()
           (delete-file code39_write_test1)
           (delete-file code39_write_test2)
           )))
+   
+   (test-case
+    "test-code39-checksum"
+    
+    (check-equal? (code39-checksum "CHEN") 23)
+    )
+   
+   (test-case
+    "test-code39-verify"
+    
+    (check-equal? (code39-verify "CHENN") #t)
+    (check-equal? (code39-verify "CHENM") #f)
+    )
+   
+   (test-case
+    "test-code39-bar->string"
+    
+    (check-equal? (code39-bar->string 
+                   (string-append
+                    "100101101101" "0"
+                    "110110100101" "0"
+                    "110101001101" "0"
+                    "110101100101" "0"
+                    "101011010011" "0"
+                    "100101101101"))
+                  "CHEN")
+
+    (check-equal? (code39-bar->string 
+                   (string-append
+                    "100101101101" "0"
+                    "100101001001" "0" "110110100101" "0"
+                    "100101001001" "0" "110101001101" "0"
+                    "100101001001" "0" "110101100101" "0"
+                    "100101001001" "0" "101011010011" "0"
+                    "100101101101"))
+                  "chen")
+    )
 
    ))
 

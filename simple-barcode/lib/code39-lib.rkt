@@ -3,9 +3,13 @@
 (provide (contract-out
           [get-code39-map (-> #:type symbol? hash?)]
           [code39->groups (-> string? list?)]
-          [code39-groups->bars (-> list? string?)]
+          [code39->bars (-> string? string?)]
+          [code39-checksum (-> string? exact-nonnegative-integer?)]
           [get-code39-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
           [draw-code39 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
+          [draw-code39-checksum (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
+          [code39-bar->string (-> string? string?)]
+          [code39-verify (-> string? boolean?)]
           ))
 
 (require "share.rkt")
@@ -55,7 +59,7 @@
     (40 #\/  "100100101001")
     (41 #\+  "100101001001")
     (42 #\%  "101001001001")
-    (0  #\*  "100101101101")
+    (43 #\*  "100101101101")
     ))
 
 (define *ascii_table*
@@ -193,6 +197,16 @@
 (define (get-code39-map #:type type)
   (let ([result_map (make-hash)])
     (cond
+     [(eq? type 'basic_char->value)
+      (for-each
+       (lambda (rec)
+         (hash-set! result_map (list-ref rec 1) (list-ref rec 0)))
+       *code_list*)]
+     [(eq? type 'basic_value->char)
+      (for-each
+       (lambda (rec)
+         (hash-set! result_map (list-ref rec 0) (list-ref rec 1)))
+       *code_list*)]
      [(eq? type 'basic_char->bar)
       (for-each
        (lambda (rec)
@@ -250,27 +264,25 @@
        (hash-ref ref_map ch))
      (string->list code39))))
 
-(define (code39-groups->bars code39_groups)
+(define (code39-group->chars code39_groups)
+  (foldr
+   (lambda (a b)
+     (string-append a b))
+   ""
+   code39_groups))
+
+(define (code39->bars chars)
   (let ([char_bar_map (get-code39-map #:type 'basic_char->bar)])
     (string-append
      "1001011011010"
-
-    (foldr
-     (lambda (fa fb)
-       (string-append fa fb))
-     ""
-     (map
-      (lambda (group)
-        (foldr
-         (lambda (fc fd)
-           (string-append fc "0" fd))
-         ""
-        (map
-         (lambda (code)
-           (hash-ref char_bar_map code))
-         (string->list group))))
-      code39_groups))
-
+     (foldr
+      (lambda (fc fd)
+        (string-append fc "0" fd))
+      ""
+      (map
+       (lambda (code)
+         (hash-ref char_bar_map code))
+       (string->list chars)))
     "100101101101")))
 
 (define (get-code-length bars_length)
@@ -283,9 +295,16 @@
    (* (+ *quiet_zone_width* bars_length *quiet_zone_width*) brick_width)
    (* (+ *top_margin* *bar_height* *code_down_margin*) brick_width)))
 
+(define (draw-code39-checksum code39 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+  (let* ([basic_value_char_map (get-code39-map #:type 'basic_value->char)]
+         [checksum (code39-checksum code39)]
+         [data (string-append code39 (string (hash-ref basic_value_char_map checksum)))])
+    (draw-code39 data file_name #:color_pair color_pair #:brick_width brick_width)))
+  
 (define (draw-code39 code39 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([groups (code39->groups code39)]
-         [bars (code39-groups->bars groups)]
+         [chars (code39-group->chars groups)]
+         [bars (code39->bars chars)]
          [dimension (get-code39-dimension (string-length bars) brick_width)]
          [width (car dimension)]
          [height (cdr dimension)]
@@ -315,17 +334,57 @@
     
     (save-bars dc file_name)))
 
-(define (code39-checksum value_list)
-  (modulo
-   (+
-    (car value_list)
-    (let loop ([loop_list (cdr value_list)]
-               [index 1]
-               [sum 0])
+(define (code39-checksum chars)
+  (let ([basic_char_value_map (get-code39-map #:type 'basic_char->value)])
+    (modulo
+     (let loop ([loop_list (string->list chars)]
+                [sum 0])
       (if (not (null? loop_list))
           (loop
            (cdr loop_list)
-           (add1 index)
-           (+ sum (* (car loop_list) index)))
-          sum)))
-   103))
+           (+ sum (hash-ref basic_char_value_map (car loop_list))))
+          sum))
+     43)))
+
+(define (code39-verify chars)
+  (let* ([basic_value_char_map (get-code39-map #:type 'basic_value->char)]
+         [data (substring chars 0 (sub1 (string-length chars)))]
+         [check_char (substring chars (sub1 (string-length chars)) (string-length chars))]
+         [checksum (code39-checksum data)])
+    (string=? (string (hash-ref basic_value_char_map checksum)) check_char)))
+
+(define (code39-bar->string bars)
+  (let* ([basic_bar_char_map (get-code39-map #:type 'basic_bar->char)]
+         [data (substring bars (+ *code39_bars_length* 1) (- (string-length bars) *code39_bars_length*))]
+         [decoded_data
+          (let loop ([loop_str data]
+                     [result_list '()])
+            (if (>= (string-length loop_str) (add1 *code39_bars_length*))
+                (loop (substring loop_str (add1 *code39_bars_length*)) (cons (hash-ref basic_bar_char_map (substring loop_str 0 *code39_bars_length*)) result_list))
+                (foldr
+                 (lambda (a b)
+                   (string-append a b))
+                 ""
+                 (map
+                  (lambda (ch)
+                    (string ch))
+                  (reverse result_list)))))])
+    (code39-reencode decoded_data)))
+
+(define (code39-reencode data)
+  (let ([extend_chars_char_map (get-code39-map #:type 'extend_chars->char)])
+    (let loop ([loop_str data]
+               [result_list '()])
+      (if (not (string=? loop_str ""))
+          (if (or 
+               (string=? (substring loop_str 0 1) "$")
+               (string=? (substring loop_str 0 1) "%")
+               (string=? (substring loop_str 0 1) "/")
+               (string=? (substring loop_str 0 1) "+"))
+              (loop (substring loop_str 2) (cons (string (hash-ref extend_chars_char_map (substring loop_str 0 2))) result_list))
+              (loop (substring loop_str 1) (cons (substring loop_str 0 1) result_list)))
+          (foldr
+           (lambda (a b)
+             (string-append a b))
+           ""
+           (reverse result_list))))))
