@@ -50,7 +50,9 @@
           (code128-bar->string bars)
           "")]
      [(eq? code_type 'code39)
-      (code39-bar->string bars)]
+      (code39-bar->string bars #f)]
+     [(eq? code_type 'code39_checksum)
+      (code39-bar->string bars #t)]
      [else
       ""]))
 

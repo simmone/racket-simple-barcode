@@ -8,7 +8,7 @@
           [get-code39-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
           [draw-code39 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [draw-code39-checksum (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
-          [code39-bar->string (-> string? string?)]
+          [code39-bar->string (-> string? boolean? string?)]
           [code39-verify (-> string? boolean?)]
           ))
 
@@ -297,13 +297,17 @@
 
 (define (draw-code39-checksum code39 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([basic_value_char_map (get-code39-map #:type 'basic_value->char)]
-         [checksum (code39-checksum code39)]
-         [data (string-append code39 (string (hash-ref basic_value_char_map checksum)))])
-    (draw-code39 data file_name #:color_pair color_pair #:brick_width brick_width)))
-  
+         [groups (code39->groups code39)]
+         [checksum (code39-checksum (foldr (lambda (a b) (string-append a b)) "" groups))])
+
+    (draw-code39-groups `(,@groups ,(string (hash-ref basic_value_char_map checksum))) groups file_name #:color_pair color_pair #:brick_width brick_width)))
+
 (define (draw-code39 code39 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (let* ([groups (code39->groups code39)]
-         [chars (code39-group->chars groups)]
+  (let ([groups (code39->groups code39)])
+    (draw-code39-groups groups groups file_name #:color_pair color_pair #:brick_width brick_width)))
+  
+(define (draw-code39-groups groups display_groups file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+  (let* ([chars (code39-group->chars groups)]
          [bars (code39->bars chars)]
          [dimension (get-code39-dimension (string-length bars) brick_width)]
          [width (car dimension)]
@@ -321,7 +325,7 @@
 
     (send dc draw-text "*" (+ x (* 4 brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
     (send dc draw-text "*" (+ x (* (- (string-length bars) 8) brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
-    (let loop ([loop_list groups]
+    (let loop ([loop_list display_groups]
                [start_x (+ x (* (+ *code39_bars_length* 1) brick_width))])
       (when (not (null? loop_list))
             (if (= (string-length (car loop_list)) 1)
@@ -353,7 +357,7 @@
          [checksum (code39-checksum data)])
     (string=? (string (hash-ref basic_value_char_map checksum)) check_char)))
 
-(define (code39-bar->string bars)
+(define (code39-bar->string bars is_checksum?)
   (let* ([basic_bar_char_map (get-code39-map #:type 'basic_bar->char)]
          [data (substring bars (+ *code39_bars_length* 1) (- (string-length bars) *code39_bars_length*))]
          [decoded_data
@@ -369,7 +373,11 @@
                   (lambda (ch)
                     (string ch))
                   (reverse result_list)))))])
-    (code39-reencode decoded_data)))
+    (if is_checksum? 
+        (if (code39-verify decoded_data)
+            (code39-reencode (substring decoded_data 0 (sub1 (string-length decoded_data))))
+            "")
+        (code39-reencode decoded_data))))
 
 (define (code39-reencode data)
   (let ([extend_chars_char_map (get-code39-map #:type 'extend_chars->char)])

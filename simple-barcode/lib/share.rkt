@@ -189,6 +189,7 @@
 (define *pattern_map* 
   (hash
    'code39 (list (pregexp "1001011011010.+0100101101101"))
+   'code39_checksum (list (pregexp "1001011011010.+0100101101101"))
    'ean13  (list (pregexp "101[0-1]{42}01010[0-1]{42}101"))
    'code128 (list (pregexp "11010000100.+1100011101011")
                   (pregexp "11010010000.+1100011101011")
