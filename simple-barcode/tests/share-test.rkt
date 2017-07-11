@@ -41,10 +41,9 @@
                               1 1 1 0 1 0 0 
                               1 0 1)]
           )
-      (check-equal? (search-barcode-on-row points_row_false) #f)
-      (let ([res (search-barcode-on-row points_row_true)])
-        (check-equal? (car res) 'ean13)
-        (check-equal? (cdr res) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101"))
+      (check-equal? (search-barcode-on-row points_row_false 'ean13) #f)
+      (let ([res (search-barcode-on-row points_row_true 'ean13)])
+        (check-equal? res "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101"))
     ))
 
    (test-case
@@ -109,9 +108,9 @@
            [points_list_true2 (list real_row real_row real_row real_row real_row noise_row)]
            [points_list_true3 (list real_row real_row real_row real_row real_row)]
            )
-      (check-equal? (search-barcode points_list_true1) '(ean13 . "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101"))
-      (check-equal? (search-barcode points_list_true2) '(ean13 . "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101"))
-      (check-equal? (search-barcode points_list_true3) '(ean13 . "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101"))
+      (check-equal? (search-barcode points_list_true1 'ean13) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
+      (check-equal? (search-barcode points_list_true2 'ean13) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
+      (check-equal? (search-barcode points_list_true3 'ean13) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
    ))
 
    ))

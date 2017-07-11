@@ -2,7 +2,7 @@
 
 (provide (contract-out 
           [barcode-write (->* (string? path-string?) (#:code_type symbol? #:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
-          [barcode-read (-> path-string? string?)]
+          [barcode-read (->* (path-string?) (#:code_type symbol?) string?)]
           [code39-verify (-> string? boolean?)]
           ))
 
@@ -23,7 +23,7 @@
     (draw-code39-checksum code file_name #:color_pair color_pair #:brick_width brick_width)]
    ))
 
-(define (barcode-read pic_path)
+(define (barcode-read pic_path #:code_type [code_type 'ean13])
    (let (
          [step1_points_list #f]
          [step2_threshold #f]
@@ -32,29 +32,26 @@
      (set! step1_points_list (pic->points pic_path))
      (set! step2_threshold (find-threshold step1_points_list))
      (set! step3_bw_points (points->bw step1_points_list step2_threshold))
-     (let ([search_result (search-barcode step3_bw_points)])
+     (let ([search_result (search-barcode step3_bw_points code_type)])
        (if search_result
-           (deal-result search_result)
+           (deal-result search_result code_type)
            (let* ([strict_points (points->strict-bw step1_points_list)]
-                  [search_result_twice (search-barcode strict_points)])
+                  [search_result_twice (search-barcode strict_points code_type)])
              (if search_result_twice
-                 (deal-result search_result_twice)
+                 (deal-result search_result_twice code_type)
                  ""))))))
 
-(define (deal-result result)
-  (let ([type (car result)]
-        [bars (cdr result)])
-    (printf "~a\n" result)
+(define (deal-result bars code_type)
     (cond
-     [(eq? type 'ean13)
+     [(eq? code_type 'ean13)
       (ean13-bar->string bars)]
-     [(eq? type 'code128)
+     [(eq? code_type 'code128)
       (if (code128-verify bars)
           (code128-bar->string bars)
           "")]
-     [(eq? type 'code39)
+     [(eq? code_type 'code39)
       (code39-bar->string bars)]
      [else
-      ""])))
+      ""]))
 
 

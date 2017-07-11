@@ -17,8 +17,8 @@
           [draw-init (->* (exact-nonnegative-integer? exact-nonnegative-integer?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
           [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
           [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
-          [search-barcode-on-row (-> list? (or/c pair? #f))]
-          [search-barcode (-> (listof list?) (or/c pair? #f))]
+          [search-barcode-on-row (-> list? symbol? (or/c string? #f))]
+          [search-barcode (-> (listof list?) symbol? (or/c string? #f))]
           ))
 
 (require racket/draw)
@@ -187,56 +187,43 @@
               (cons (reverse result_list) (reverse index_list)))))))
 
 (define *pattern_map* 
-  '#hash(
-         ('code39 .
-                  (list 
-                   (pregexp "1001011011010.+0100101101101")))
-         ('ean13 .
-                 (list 
-                  (pregexp "101[0-1]{42}01010[0-1]{42}1019")))
-         ('code128 .
-                   (list 
-                    (pregexp "11010000100.+1100011101011")
-                    (pregexp "11010010000.+1100011101011")
-                    (pregexp "11010011100.+1100011101011")))
-         ))
+  (hash
+   'code39 (list (pregexp "1001011011010.+0100101101101"))
+   'ean13  (list (pregexp "101[0-1]{42}01010[0-1]{42}101"))
+   'code128 (list (pregexp "11010000100.+1100011101011")
+                  (pregexp "11010010000.+1100011101011")
+                  (pregexp "11010011100.+1100011101011"))))
 
-(define (search-barcode-on-row points_row)
-  (let loop ([loop_width 1])
-    (if (> (* loop_width 30) (length points_row))
-        #f
-        (let ([result
-               (let* ([squashed_line (squash-points points_row loop_width)]
-                      [squashed_cols (car squashed_line)]
-                      [squashed_positions (cdr squashed_line)]
-                      [original_str 
-                       (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) points_row))]
-                      [squashed_str 
-                       (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
+(define (search-barcode-on-row points_row code_type)
+  (let ([regex_list (hash-ref *pattern_map* code_type)])
+    (let loop ([loop_width 1])
+      (if (> (* loop_width 30) (length points_row))
+          #f
+          (let ([result
+                 (let* ([squashed_line (squash-points points_row loop_width)]
+                        [squashed_cols (car squashed_line)]
+                        [squashed_positions (cdr squashed_line)]
+                        [original_str 
+                         (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) points_row))]
+                        [squashed_str 
+                         (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
                  
-                 (let match-loop ([loop_pattern_list *pattern_list*])
-                             (if (not (null? loop_pattern_list))
-                                 (let* ([mode (caar loop_pattern_list)]
-                                        [regex_list (cdar loop_pattern_list)])
-                                   (let regex-loop ([loop_regex_list regex_list])
-                                     (if (not (null? loop_regex_list))
-                                         (let ([search_result (regexp-match-positions (car loop_regex_list) squashed_str)])
-                                           (if search_result
-                                               (cons
-                                                mode
-                                                (substring squashed_str (caar search_result) (cdar search_result)))
-                                               (regex-loop (cdr loop_regex_list))))
-                                         (match-loop (cdr loop_pattern_list)))))
-                                 #f)))])
+                   (let regex-loop ([loop_regex_list regex_list])
+                     (if (not (null? loop_regex_list))
+                         (let ([search_result (regexp-match-positions (car loop_regex_list) squashed_str)])
+                           (if search_result
+                               (substring squashed_str (caar search_result) (cdar search_result))
+                               (regex-loop (cdr loop_regex_list))))
+                         #f)))])
           (if result
               result
-              (loop (add1 loop_width)))))))
+              (loop (add1 loop_width))))))))
 
-(define (search-barcode rows)
+(define (search-barcode rows code_type)
   (let loop ([loop_rows rows]
              [loop_count 1])
     (if (not (null? loop_rows))
-        (let ([result (search-barcode-on-row (car loop_rows))])
+        (let ([result (search-barcode-on-row (car loop_rows) code_type)])
           (if result
               result
               (loop (cdr loop_rows) (add1 loop_count))))
