@@ -188,8 +188,8 @@
 
 (define *pattern_map* 
   (hash
-   'code39 (list (pregexp "1001011011010.+0100101101101"))
-   'code39_checksum (list (pregexp "1001011011010.+0100101101101"))
+   'code39 (list (pregexp "10010110110101.+10100101101101"))
+   'code39_checksum (list (pregexp "10010110110101.+10100101101101"))
    'ean13  (list (pregexp "101[0-1]{42}01010[0-1]{42}101"))
    'code128 (list (pregexp "11010000100.+1100011101011")
                   (pregexp "11010010000.+1100011101011")
@@ -223,9 +223,9 @@
 (define (search-barcode rows code_type)
   (let loop ([loop_rows rows]
              [loop_count 1])
-    (if (not (null? loop_rows))
+    (if (and (not (null? loop_rows)) (>= (length loop_rows) 6))
         (let ([result (search-barcode-on-row (car loop_rows) code_type)])
           (if result
               result
-              (loop (cdr loop_rows) (add1 loop_count))))
+              (loop (list-tail loop_rows 5) (+ loop_count 5))))
         #f)))

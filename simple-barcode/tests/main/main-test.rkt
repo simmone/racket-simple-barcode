@@ -14,6 +14,9 @@
 (define-runtime-path extern_code128_test1 "extern_code128_test1.png")
 (define-runtime-path extern_code128_test2 "extern_code128_test2.png")
 
+(define-runtime-path extern_code39_test1 "extern_code39_test1.png")
+(define-runtime-path extern_code39_test2 "extern_code39_test2.png")
+
 (define-runtime-path ean13_file "barcode_ean13.png")
 (define-runtime-path ean13_w5_file "barcode_ean13_w5.png")
 (define-runtime-path ean13_color_file "barcode_ean13_color.png")
@@ -44,9 +47,18 @@
     (check-equal? (barcode-read example_ean13_trans_file) "7501031311309")
 
     (check-equal? (barcode-read extern_ean13_test1) "5901234123457")
+
     (check-equal? (barcode-read extern_code128_test1 #:code_type 'code128) "Wikipedia")
     (check-equal? (barcode-read extern_code128_test2 #:code_type 'code128) "Barcode World")
+
+    (check-equal? (barcode-read extern_code39_test1 #:code_type 'code39) "WIKIPEDIA")
+    (check-equal? (barcode-read extern_code39_test2 #:code_type 'code39) "MY0150036545032")
     )
+   ))
+
+(define dis_tests
+  (test-suite
+   "test-rest"
 
    (test-case
     "test-ean13-writer-reader"

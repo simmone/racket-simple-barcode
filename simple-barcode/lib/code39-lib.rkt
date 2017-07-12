@@ -358,6 +358,7 @@
     (string=? (string (hash-ref basic_value_char_map checksum)) check_char)))
 
 (define (code39-bar->string bars is_checksum?)
+  (printf "~a\n" bars)
   (let* ([basic_bar_char_map (get-code39-map #:type 'basic_bar->char)]
          [data (substring bars (+ *code39_bars_length* 1) (- (string-length bars) *code39_bars_length*))]
          [decoded_data
