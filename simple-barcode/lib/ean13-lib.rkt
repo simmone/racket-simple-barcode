@@ -9,6 +9,7 @@
           [draw-ean13 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [draw-ean13-raw (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [get-bar-char-map (-> hash?)]
+          [ean13-check-bars (-> string? boolean?)]
           ))
 
 (require "share.rkt")
@@ -196,3 +197,6 @@
     (send dc draw-text ">" (+ x (* (+ 95 3) brick_width)) (* (+ *top_margin* *bar_height*) brick_width))
     
     (save-bars dc file_name)))
+
+(define (ean13-check-bars bars)
+  #t)
