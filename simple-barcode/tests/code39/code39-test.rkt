@@ -176,16 +176,6 @@
                   "chen")
     )
 
-   (test-case
-    "test-code39-check"
-    
-    (check-true (code39-check-bars  (string-append "1001011011010" "100101101101"))
-    (check-true (code39-check-bars  (string-append "1001011011010" "1001010010010" "100101101101"))
-    (check-false (code39-check-bars (string-append "1001011011010" "0001010010010" "100101101101"))
-    (check-false (code39-check-bars (string-append "1001011011010" "1001010010011" "100101101101"))
-    (check-false (code39-check-bars (string-append "1001011011010" "1001010010011" "100101101101"))
-    )
-
    ))
 
 (run-tests test-lib)

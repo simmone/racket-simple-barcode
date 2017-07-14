@@ -3,8 +3,6 @@
 (provide (contract-out 
           [barcode-write (->* (string? path-string?) (#:code_type symbol? #:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [barcode-read (->* (path-string?) (#:code_type symbol?) string?)]
-          [code39-verify (-> string? boolean?)]
-          [search-barcode (-> (listof list?) symbol? (or/c string? #f))]
           ))
 
 (require "lib/share.rkt")
@@ -33,34 +31,21 @@
      (set! step1_points_list (pic->points pic_path))
      (set! step2_threshold (find-threshold step1_points_list))
      (set! step3_bw_points (points->bw step1_points_list step2_threshold))
-     (let ([search_result (search-barcode step3_bw_points code_type)])
-       (if search_result
-           (deal-result search_result code_type)
-           (let* ([strict_points (points->strict-bw step1_points_list)]
-                  [search_result_twice (search-barcode strict_points code_type)])
-             (if search_result_twice
-                 (deal-result search_result_twice code_type)
-                 ""))))))
+     (let ([search_result (search-pattern step1_points_list step2_threshold code_type)])
+             (if search_result
+                 (deal-result search_result code_type)
+                 ""))))
 
-(define (search-barcode rows code_type)
-  (let loop ([loop_rows rows]
-             [loop_count 1])
-    (if (and (not (null? loop_rows)) (>= (length loop_rows) 6))
-        (let ([result (search-barcode-on-row (car loop_rows) code_type)])
-          (if (and
-               result
-               (cond
-                [(eq? code_type 'ean13)
-                 (ean13-check-bars result)]
-                [(eq? code_type 'code128)
-                 (code128-check-bars result)]
-                [(eq? code_type 'ean39)
-                 (ean39-check-bars result)]
-                [(eq? code_type 'ean39_checksum)
-                 (ean39-checksum-check-bars result)]))
-              result
-              (loop (list-tail loop_rows 5) (+ loop_count 5))))
-        #f)))
+(define (search-pattern points_list threshold code_type)
+  (let ([m1_bw_points (points->bw points_list threshold)]
+        [m1_result (search-barcode m1_bw_points code_type)])
+    (if m1_result
+        m1_result
+        (let ([m2_bw_points (points->strict-bw points_list threshold)]
+              [m2_result (search-barcode m2_bw_points code_type)])
+          (if m2_result
+              m2_result
+              #f)))))
 
 (define (deal-result bars code_type)
     (cond

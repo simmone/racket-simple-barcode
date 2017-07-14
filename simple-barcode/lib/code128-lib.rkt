@@ -12,7 +12,6 @@
           [draw-code128 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [code128-bar->string (-> string? string?)]
           [code128-verify (-> string? boolean?)]
-          [code128-check-bars (-> string? boolean?)]
           ))
 
 (require "share.rkt")
@@ -510,6 +509,3 @@
          [checksum (get-checksum (hash-ref ch_map checksum_bar))]
          [actual_checksum (code128-bars-checksum bars)])
     (= (string->number checksum) actual_checksum)))
-
-(define (code128-check-bars bars)
-  #t)

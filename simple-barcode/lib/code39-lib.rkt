@@ -10,8 +10,6 @@
           [draw-code39-checksum (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [code39-bar->string (-> string? boolean? string?)]
           [code39-verify (-> string? boolean?)]
-          [code39-check-bars (-> string? boolean?)]
-          [code39-checksum-check-bars (-> string? boolean?)]
           ))
 
 (require "share.rkt")
@@ -399,12 +397,3 @@
              (string-append a b))
            ""
            (reverse result_list))))))
-
-(define (code39-check-bars bars)
-  #t)
-
-(define (code39-checksum-check-bars bars)
-  (and
-   (= (remainder (add1 string-length bars) 13) 0)
-   (regexp-match (pregexp "1001011011010(1[0-1]{11}0)+100101101101"))
-   ))

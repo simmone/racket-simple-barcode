@@ -41,6 +41,8 @@
    (test-case
     "test-read"
 
+    (check-equal? (barcode-read extern_code39_test1 #:code_type 'code39) "WIKIPEDIA")
+
     (check-equal? (barcode-read example_ean13_file) "7501031311309")
     (check-equal? (barcode-read example_ean13_w5_file) "7501031311309")
     (check-equal? (barcode-read example_ean13_color_file) "7501031311309")
@@ -140,74 +142,6 @@
         (lambda ()
           (delete-file code39_checksum_file)
           )))
-
-
-   (test-case
-    "test-search-barcode"
-    
-    (let* (
-           [real_row '(
-                       1 0 1 0 0 1 0
-                         1 0 1
-                         0 1 1 0 0 0 1 
-                         0 1 0 0 1 1 1 
-                         0 0 1 1 0 0 1
-                         0 1 0 0 1 1 1
-                         0 1 1 1 1 0 1
-                         0 1 1 0 0 1 1
-                         0 1 0 1 0
-                         1 0 0 0 0 1 0
-                         1 1 0 0 1 1 0
-                         1 1 0 0 1 1 0
-                         1 0 0 0 0 1 0
-                         1 1 1 0 0 1 0
-                         1 1 1 0 1 0 0 
-                         1 0 1
-                         0 0 1 0 1 1 1)]
-           [real_row2 '(
-                       1 0 1 0 0 1
-                         1 0 1
-                         0 1 1 0 0 0 1 
-                         0 1 0 0 1 1 1 
-                         0 0 1 1 0 0 1
-                         0 1 0 0 1 1 1
-                         0 1 1 1 1 0 1
-                         0 1 1 0 0 1 1
-                         0 1 0 1 0
-                         1 0 0 0 0 1 0
-                         1 1 0 0 1 1 0
-                         1 1 0 0 1 1 0
-                         1 0 0 0 0 1 0
-                         1 1 1 0 0 1 0
-                         1 1 1 0 1 0 0 
-                         1 0 1
-                         0 0 1 0 1 1 1 0)]
-           [noise_row '(
-                        1 0 1 0 0 1 0
-                          1 0 0
-                          0 1 1 0 0 0 1 
-                          0 1 0 0 1 1 1 
-                          0 0 1 1 0 0 1
-                          0 1 0 0 1 1 1
-                          0 1 1 1 1 0 1
-                          0 1 1 0 0 1 1
-                          0 1 0 1 0
-                          1 0 0 0 0 1 0
-                          1 1 0 0 1 1 0
-                          1 1 0 0 1 1 0
-                          1 0 0 0 0 1 0
-                          1 1 1 0 0 1 0
-                          1 1 1 0 1 0 0 
-                          1 0 1
-                          0 0 1 0 1 1 1)]
-           [points_list_true1 (list noise_row noise_row real_row real_row real_row real_row real_row noise_row)]
-           [points_list_true2 (list real_row real_row real_row real_row real_row noise_row)]
-           [points_list_true3 (list real_row real_row real_row real_row real_row)]
-           )
-      (check-equal? (search-barcode points_list_true1 'ean13) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
-      (check-equal? (search-barcode points_list_true2 'ean13) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
-      (check-equal? (search-barcode points_list_true3 'ean13) "10101100010100111001100101001110111101011001101010100001011001101100110100001011100101110100101")
-   ))
 
    ))
 

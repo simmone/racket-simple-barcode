@@ -18,10 +18,21 @@
           [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
           [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
           [search-barcode-on-row (-> list? symbol? (or/c string? #f))]
-
+          [search-barcode (-> (listof list?) symbol? (or/c string? #f))]
+          [*TRACE_LEVEL* parameter?]
+          [*TRACE_INFO* exact-nonnegative-integer?]
+          [*TRACE_DEBUG* exact-nonnegative-integer?]
           ))
 
 (require racket/draw)
+
+(define *TRACE_LEVEL* (make-parameter 0))
+(define *TRACE_INFO* 1)
+(define *TRACE_DEBUG* 2)
+
+(define (appTrace trace_level action)
+  (when (>= (*TRACE_LEVEL*) trace_level)
+        (action)))
 
 (define *quiet_zone_width* 10)
 (define *bar_height* 60)
@@ -188,12 +199,12 @@
 
 (define *pattern_map* 
   (hash
-   'code39 (list (pregexp "100101101101010.+010100101101101"))
-   'code39_checksum (list (pregexp "100101101101010.+010100101101101"))
+   'code39 (list (pregexp "1001011011010(1[0-1]{11}0)+100101101101"))
+   'code39_checksum (list (pregexp "1001011011010(1[0-1]{11}0)+100101101101"))
    'ean13  (list (pregexp "101[0-1]{42}01010[0-1]{42}101"))
-   'code128 (list (pregexp "11010000100.+01100011101011")
-                  (pregexp "11010010000.+01100011101011")
-                  (pregexp "11010011100.+01100011101011"))))
+   'code128 (list (pregexp "11010000100(1[0-1]{9}0)+1100011101011")
+                  (pregexp "11010010000(1[0-1]{9}0)+1100011101011")
+                  (pregexp "11010011100(1[0-1]{9}0)+1100011101011"))))
 
 (define (search-barcode-on-row points_row code_type)
   (let ([regex_list (hash-ref *pattern_map* code_type)])
@@ -208,6 +219,9 @@
                          (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) points_row))]
                         [squashed_str 
                          (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
+                   
+                   (printf "origin:\n~a\n" original_str)
+                   (printf "squashed:\n~a\n" squashed_str)
                  
                    (let regex-loop ([loop_regex_list regex_list])
                      (if (not (null? loop_regex_list))
@@ -219,4 +233,16 @@
           (if result
               result
               (loop (add1 loop_width))))))))
+
+(define (search-barcode rows code_type)
+  (let loop ([loop_rows rows]
+             [loop_count 1])
+    (if (not (null? loop_rows))
+        (let ([result (search-barcode-on-row (car loop_rows) code_type)])
+          (if result
+              result
+              (if (>= (length loop_rows) 6)
+                  (loop (list-tail loop_rows 5) (+ loop_count 5))
+                  #f)))
+        #f)))
 
