@@ -29,7 +29,14 @@ A Barcode reader and writer for Racket
     (barcode-read "barcode_ean13_trans.png"))
 
   (barcode-write "chenxiao770117" "barcode_code128.png" #:code_type 'code128)
-  (printf "~a\n" (barcode-read "barcode_code128.png"))
+  (printf "~a\n" (barcode-read "barcode_code128.png" #:code_type 'code128))
+
+  (barcode-write "CHEN" "barcode_code39.png" #:code_type 'code39)
+  (printf "~a\n" (barcode-read "barcode_code39.png" #:code_type 'code39))
+    
+  (barcode-write "CHEN" "barcode_code39_checksum.png" #:code_type 'code39_checksum)
+  (printf "~a\n" (barcode-read "barcode_code39_checksum.png" #:code_type 'code39_checksum))
+
   
 ```
 
@@ -51,5 +58,17 @@ code128, brick_width = 2:<br>
 ![ScreenShot](simple-barcode/example/barcode_code128.png)
 
 chenxiao770117
+
+code39, brick_width = 2:<br>
+![ScreenShot](simple-barcode/example/barcode_code39.png)
+
+CHEN
+
+code39 add checksum, brick_width = 2:<br>
+![ScreenShot](simple-barcode/example/barcode_code39_checksum.png)
+
+CHEN
+
+
 
 
