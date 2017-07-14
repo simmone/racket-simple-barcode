@@ -26,11 +26,9 @@
    (let (
          [step1_points_list #f]
          [step2_threshold #f]
-         [step3_bw_points #f]
          )
      (set! step1_points_list (pic->points pic_path))
      (set! step2_threshold (find-threshold step1_points_list))
-     (set! step3_bw_points (points->bw step1_points_list step2_threshold))
      (let ([search_result (search-pattern step1_points_list step2_threshold code_type)])
              (if search_result
                  (deal-result search_result code_type)
