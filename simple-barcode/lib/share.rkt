@@ -19,20 +19,9 @@
           [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
           [search-barcode-on-row (-> list? symbol? (or/c string? #f))]
           [search-barcode (-> (listof list?) symbol? (or/c string? #f))]
-          [*TRACE_LEVEL* parameter?]
-          [*TRACE_INFO* exact-nonnegative-integer?]
-          [*TRACE_DEBUG* exact-nonnegative-integer?]
           ))
 
 (require racket/draw)
-
-(define *TRACE_LEVEL* (make-parameter 0))
-(define *TRACE_INFO* 1)
-(define *TRACE_DEBUG* 2)
-
-(define (appTrace trace_level action)
-  (when (>= (*TRACE_LEVEL*) trace_level)
-        (action)))
 
 (define *quiet_zone_width* 10)
 (define *bar_height* 60)
@@ -220,9 +209,6 @@
                         [squashed_str 
                          (foldr (lambda (a b) (string-append a b)) "" (map (lambda (b) (number->string b)) squashed_cols))])
                    
-                   (printf "origin:\n~a\n" original_str)
-                   (printf "squashed:\n~a\n" squashed_str)
-                 
                    (let regex-loop ([loop_regex_list regex_list])
                      (if (not (null? loop_regex_list))
                          (let ([search_result (regexp-match-positions (car loop_regex_list) squashed_str)])

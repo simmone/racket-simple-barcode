@@ -22,6 +22,12 @@
     (draw-code39-checksum code file_name #:color_pair color_pair #:brick_width brick_width)]
    ))
 
+(define (print-points biaoshi points)
+  (let loop ([loop_points points]
+             [line 1])
+    (when (not (null? loop_points))
+          (loop (cdr loop_points) (add1 line)))))
+
 (define (barcode-read pic_path #:code_type [code_type 'ean13])
    (let (
          [step1_points_list #f]
@@ -35,12 +41,12 @@
                  ""))))
 
 (define (search-pattern points_list threshold code_type)
-  (let ([m1_bw_points (points->bw points_list threshold)]
-        [m1_result (search-barcode m1_bw_points code_type)])
+  (let* ([m1_bw_points (points->bw points_list threshold)]
+         [m1_result (search-barcode m1_bw_points code_type)])
     (if m1_result
         m1_result
-        (let ([m2_bw_points (points->strict-bw points_list threshold)]
-              [m2_result (search-barcode m2_bw_points code_type)])
+        (let* ([m2_bw_points (points->strict-bw points_list)]
+               [m2_result (search-barcode m2_bw_points code_type)])
           (if m2_result
               m2_result
               #f)))))
