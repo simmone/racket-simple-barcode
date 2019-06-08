@@ -15,7 +15,11 @@ simple-barcode package is a package to read and write barcode file.
 
 raco pkg install simple-barcode
 
-@section{Write}
+@section{Usage}
+
+@defmodule[simple-barcode]
+
+@subsection{Write}
 
 select a type, size, color, then write a string to barcode.
 
@@ -31,7 +35,7 @@ there is also a complete read and write example on github:@link["https://github.
 support code_type: 'ean13, 'code128, 'code39, 'code39_checksum
 }
 
-@section{Read}
+@subsection{Read}
 
 read barcode from a picture file.
 
@@ -43,9 +47,9 @@ read barcode from a picture file.
 support code_type: 'ean13, 'code128, 'code39, 'code39_checksum
 }
 
-@section{Complete Example}
+@subsection{Complete Example}
 
-@verbatim{
+@codeblock{
 #lang racket
 
 (require simple-barcode)
@@ -55,25 +59,25 @@ support code_type: 'ean13, 'code128, 'code39, 'code39_checksum
 
 @image{example/barcode_ean13.png}
 
-@verbatim{
+@codeblock{
 (barcode-write "750103131130" "barcode_ean13_w5.png" #:brick_width 5)
 }
 
 @image{example/barcode_ean13_w5.png}
 
-@verbatim{
+@codeblock{
 (barcode-write "750103131130" "barcode_ean13_color.png" #:color_pair '("red" . "gray"))
 }
 
 @image{example/barcode_ean13_color.png}
 
-@verbatim{
+@codeblock{
 (barcode-write "750103131130" "barcode_ean13_trans.png" #:color_pair '("red" . "transparent"))
 }
 
 @image{example/barcode_ean13_trans.png}
 
-@verbatim{
+@codeblock{
 (printf "~a,~a,~a,~a\n"
   (barcode-read "barcode_ean13.png")
   
@@ -88,7 +92,7 @@ support code_type: 'ean13, 'code128, 'code39, 'code39_checksum
 
 @image{example/barcode_code128.png}
 
-@verbatim{
+@codeblock{
 (printf "~a\n" (barcode-read "barcode_code128.png" #:code_type 'code128))
 
 (barcode-write "CHEN" "barcode_code39.png" #:code_type 'code39)
@@ -96,7 +100,7 @@ support code_type: 'ean13, 'code128, 'code39, 'code39_checksum
 
 @image{example/barcode_code39.png}
 
-@verbatim{
+@codeblock{
 (printf "~a\n" (barcode-read "barcode_code39.png" #:code_type 'code39))
 
 (barcode-write "CHEN" "barcode_code39_checksum.png" #:code_type 'code39_checksum)
@@ -104,6 +108,6 @@ support code_type: 'ean13, 'code128, 'code39, 'code39_checksum
 
 @image{example/barcode_code39_checksum.png}
 
-@verbatim{
+@codeblock{
 (printf "~a\n" (barcode-read "barcode_code39_checksum.png" #:code_type 'code39_checksum))
 }
