@@ -30,6 +30,12 @@
 (define *code_down_margin* 15)
 (define *font_size* 5)
 
+(define (set-color dc color)
+  (when (not (string=? color "transparent"))
+        (send dc set-pen color 1 'solid))
+
+  (send dc set-brush color 'solid))
+
 (define (draw-init width height #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (let* ([front_color (car color_pair)]
          [back_color (cdr color_pair)]
@@ -58,12 +64,6 @@
           (when (char=? (car loop_list) #\1)
                 (send dc draw-rectangle loop_x y bar_width bar_height))
           (loop (cdr loop_list) (+ loop_x bar_width)))))
-
-(define (set-color dc color)
-  (when (not (string=? color "transparent"))
-        (send dc set-pen color 1 'solid))
-
-  (send dc set-brush color 'solid))
 
 (define (bitmap->points img)
   (let* ([width (send img get-width)]
