@@ -12,6 +12,7 @@
           ))
 
 (require "share.rkt")
+(require "draw.rkt")
 
 (define (ean13-checksum barcode)
   (let-values ([
@@ -139,6 +140,7 @@
 
 (define *foot_height* 7)
 (define *ean13_bars_length* 7)
+(define *ean13_down_margin* 20)
 
 (define (get-ean13-dimension brick_width)
   (cons
@@ -157,16 +159,24 @@
       (error
        "invalid ean13 string: length is 12, only digit")))
 
-(define (draw-ean13-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+(define (draw-ean13-raw ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [_brick_width 2])
   (let* ([dimension (get-ean13-dimension brick_width)]
-         [width (car dimension)]
-         [height (cdr dimension)]
+         [_width (car dimension)]
+         [_height (cdr dimension)]
          [x (* (add1 *quiet_zone_width*) brick_width)]
          [y (* (add1 *top_margin*) brick_width)]
          [bar_height (* brick_width *bar_height*)]
          [foot_height (* brick_width (+ *bar_height* *foot_height*))]
-         [bars (ean13->bars ean13)]
-         [dc #f])
+         [bars (ean13->bars ean13)])
+
+    (parameterize
+     (
+      [width _width]
+      [height _height]
+      [front_color (car color_pair)]
+      [back_color (cdr color_pair)]
+      [brick_width _brick_width]
+      )
 
     (set! dc (draw-init width height #:color_pair color_pair #:brick_width brick_width))
     

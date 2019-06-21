@@ -6,7 +6,7 @@
 
 (provide (contract-out
           [draw-png (-> path-string? procedure? void?)]
-          [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
+          [draw-bars (-> string? #:x natural? #:y natural? void?)]
           [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
           ))
 
@@ -32,7 +32,7 @@
     
     (draw-func)
 
-    (send (send (*dc*) get-bitmap) save-file (*file_name*) 'png))))
+    (send (send (*dc*) get-bitmap) save-file file_name 'png))))
 
 (define (set-color color)
   (when (not (string=? color "transparent"))
@@ -40,11 +40,11 @@
 
   (send (*dc*) set-brush color 'solid))
 
-(define (draw-bars dc bars #:x x #:y y #:bar_width bar_width #:bar_height bar_height)
+(define (draw-bars bars #:x x #:y y)
   (let loop ([loop_list (string->list bars)]
              [loop_x x])
     (when (not (null? loop_list))
           (when (char=? (car loop_list) #\1)
-                (send dc draw-rectangle loop_x y bar_width bar_height))
-          (loop (cdr loop_list) (+ loop_x bar_width)))))
+                (send (*dc*) draw-rectangle loop_x y (*bar_width*) (*bar_height*)))
+          (loop (cdr loop_list) (+ loop_x (*bar_width*))))))
 
