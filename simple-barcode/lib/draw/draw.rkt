@@ -16,8 +16,8 @@
           [drawing (-> (or/c 'png 'svg) path-string? procedure? void?)]
           [draw-bars (-> (or/c 'png 'svg) string? #:x natural? #:y natural? #:bar_height natural? void?)]
           [draw-png-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
-          [draw-text (-> (or/c 'png 'svg) string? #:x natural? #:y natural? void?)]
-          [draw-png-text (-> string? #:x natural? #:y natural? void?)]
+          [draw-text (-> (or/c 'png 'svg) string? #:x natural? #:y natural? #:font_size natural? void?)]
+          [draw-png-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
           ))
 
 (define (drawing type file_name draw-func)
@@ -36,12 +36,10 @@
     (draw-png-bars bars #:x #:y y #:bar_height bar_height)]
    ))
 
-(define (draw-text type txt #:x x #:y y)
+(define (draw-text type txt #:x x #:y y #:font_size font_size)
   (cond
    [(eq? type 'png)
-    (draw-png-text bars #:x x #:y y)]
+    (draw-png-text bars #:x x #:y y #:font_size font_size)]
    [else
-    (draw-png-text bars #:x #:y y)]
+    (draw-png-text bars #:x #:y y #:font_size font_size)]
    ))
-
-
