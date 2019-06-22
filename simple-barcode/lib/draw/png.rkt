@@ -6,8 +6,8 @@
 
 (provide (contract-out
           [draw-png (-> path-string? procedure? void?)]
-          [draw-bars (-> string? #:x natural? #:y natural? void?)]
-          [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
+          [draw-png-bars (-> string? #:x natural? #:y natural? void?)]
+          [draw-png-text (-> string? #:x natural? #:y natural? void?)]
           ))
 
 (define *dc* (make-parameter #f))
@@ -40,11 +40,13 @@
 
   (send (*dc*) set-brush color 'solid))
 
-(define (draw-bars bars #:x x #:y y)
+(define (draw-png-bars bars #:x x #:y y #:bar_height bar_height)
   (let loop ([loop_list (string->list bars)]
              [loop_x x])
     (when (not (null? loop_list))
           (when (char=? (car loop_list) #\1)
-                (send (*dc*) draw-rectangle loop_x y (*bar_width*) (*bar_height*)))
+                (send (*dc*) draw-rectangle loop_x y (*bar_width*) bar_height))
           (loop (cdr loop_list) (+ loop_x (*bar_width*))))))
 
+(define (draw-png-text txt #:x x #:y y)
+  (send (*dc*) draw-text txt x y (*brick_width*)))
