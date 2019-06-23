@@ -6,7 +6,7 @@
           [*front_color* parameter?]
           [*back_color* parameter?]
           [*brick_width* parameter?]
-          [*quite_zone_width* parameter?]
+          [*quiet_zone_width* parameter?]
           [*bar_height* parameter?]
           [*top_margin* parameter?]
           [*font_size* parameter?]

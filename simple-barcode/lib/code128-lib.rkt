@@ -9,12 +9,13 @@
           [code128-bars-checksum (-> string? exact-nonnegative-integer?)]
           [code128->bars (-> list? string?)]
           [get-code128-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
-          [draw-code128 (->* (string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
+          [draw-code128 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [code128-bar->string (-> string? string?)]
           [code128-verify (-> string? boolean?)]
           ))
 
 (require "share.rkt")
+(require "draw/draw.rkt")
 
 (define *code_list*
   '(
@@ -138,16 +139,16 @@
            (set! ch (list-ref rec 2))]
           [(eq? code 'C)
            (set! ch (list-ref rec 3))])
-       (cond
-        [(eq? type 'char->bar)
-         (hash-set! result_map ch (list-ref rec 4))]
-        [(eq? type 'bar->char)
-         (hash-set! result_map (list-ref rec 4) ch)]
-        [(eq? type 'char->weight)
-         (hash-set! result_map ch (list-ref rec 0))]
-        [(eq? type 'bar->weight)
-         (hash-set! result_map (list-ref rec 4) (list-ref rec 0))]
-        )))
+         (cond
+          [(eq? type 'char->bar)
+           (hash-set! result_map ch (list-ref rec 4))]
+          [(eq? type 'bar->char)
+           (hash-set! result_map (list-ref rec 4) ch)]
+          [(eq? type 'char->weight)
+           (hash-set! result_map ch (list-ref rec 0))]
+          [(eq? type 'bar->weight)
+           (hash-set! result_map (list-ref rec 4) (list-ref rec 0))]
+          )))
      *code_list*)
     result_map))
 
@@ -414,29 +415,6 @@
    (* (+ *quiet_zone_width* (+ (* (sub1 code_length) *code128_bars_length*) 13) *quiet_zone_width*) brick_width)
    (* (+ *top_margin* *bar_height* *code_down_margin*) brick_width)))
 
-(define (draw-code128 code128 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (let* ([encoded_list (encode-c128 code128)]
-         [data_code_list (shift-compress encoded_list)]
-         [checksum (code128-checksum (code->value data_code_list))]
-         [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
-         [dimension (get-code128-dimension (length code_list) brick_width)]
-         [width (car dimension)]
-         [height (cdr dimension)]
-         [x (* (add1 *quiet_zone_width*) brick_width)]
-         [y (* (add1 *top_margin*) brick_width)]
-         [bar_height (* brick_width *bar_height*)]
-         [foot_height (* brick_width *bar_height*)]
-         [bars (code128->bars code_list)]
-         [dc #f])
-
-    (set! dc (draw-init width height #:color_pair color_pair #:brick_width brick_width))
-    
-    (draw-bars dc bars #:x x #:y y #:bar_width brick_width #:bar_height bar_height)
-
-    (send dc draw-text (regexp-replace* #rx"(.)" code128 "\\  ") (+ x (* (+ *code128_bars_length* 3) brick_width)) (* (+ *top_margin* *bar_height* 2) brick_width))
-   
-    (save-bars dc file_name)))
-
 (define (code128-bar->string bar_string)
   (foldr
    (lambda (a b)
@@ -486,7 +464,7 @@
                        (loop (substring loop_str 11) current_mode (cons "" result_list))]
                       [else
                        (loop (substring loop_str 11) current_mode (cons val result_list))])
-                   (loop (substring loop_str 11) current_mode (cons (string val) result_list))))
+                     (loop (substring loop_str 11) current_mode (cons (string val) result_list))))
                (if (= (string-length loop_str) 24)
                    (reverse result_list)
                    (error "invalid data")))
@@ -509,3 +487,41 @@
          [checksum (get-checksum (hash-ref ch_map checksum_bar))]
          [actual_checksum (code128-bars-checksum bars)])
     (= (string->number checksum) actual_checksum)))
+
+(define (draw-code128 type code128 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
+  (let* ([encoded_list (encode-c128 code128)]
+         [data_code_list (shift-compress encoded_list)]
+         [checksum (code128-checksum (code->value data_code_list))]
+         [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
+         [dimension (get-code128-dimension (length code_list) (*brick_width*))]
+         [bars (code128->bars code_list)])
+    
+    (draw-code128-raw type code128 dimension bars file_name #:color_pair color_pair #:brick_width brick_width)))
+
+(define (draw-code128-raw type code128 dimension bars file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [_brick_width 2])
+  (parameterize
+      (
+       [width (car dimension)]
+       [height (cdr dimension)]
+       [front_color (car color_pair)]
+       [back_color (cdr color_pair)]
+       [brick_width _brick_width]
+       )
+    (let* (
+           [x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
+           [y (* (add1 (*top_margin*)) (*brick_width*))]
+           [bar_height (* (*brick_width*) (*bar_height*))]
+           [foot_height (* (*brick_width*) (*bar_height*))])
+
+      (drawing
+       type
+       file_name
+       (lambda ()
+         (draw-bars bars #:x x #:y y #:bar_height bar_height)
+
+         (draw-text
+          (regexp-replace* #rx"(.)" code128 "\\  ")
+          (+ x (* (+ *code128_bars_length* 3) (*brick_width*)))
+          (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*))
+          (*brick_width*)
+          ))))))

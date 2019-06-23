@@ -9,7 +9,8 @@
           [*front_color* parameter?]
           [*back_color* parameter?]
           [*brick_width* parameter?]
-          [*quite_zone_width* parameter?]
+          [*bar_height* parameter?]
+          [*quiet_zone_width* parameter?]
           [*top_margin* parameter?]
           [*font_size* parameter?]
           [*code_down_margin* parameter?]
@@ -33,13 +34,13 @@
    [(eq? type 'png)
     (draw-png-bars bars #:x x #:y y #:bar_height bar_height)]
    [else
-    (draw-png-bars bars #:x #:y y #:bar_height bar_height)]
+    (draw-png-bars bars #:x x #:y y #:bar_height bar_height)]
    ))
 
 (define (draw-text type txt #:x x #:y y #:font_size font_size)
   (cond
    [(eq? type 'png)
-    (draw-png-text bars #:x x #:y y #:font_size font_size)]
+    (draw-png-text txt #:x x #:y y #:font_size font_size)]
    [else
-    (draw-png-text bars #:x #:y y #:font_size font_size)]
+    (draw-png-text txt #:x x #:y y #:font_size font_size)]
    ))

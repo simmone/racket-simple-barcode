@@ -1,7 +1,6 @@
 #lang racket
 
 (provide (contract-out
-          [set-color (-> (is-a?/c bitmap-dc%) (or/c (is-a?/c color%) string?) void?)]
           [pic->points (-> path-string? (listof list?))]
           [find-threshold (-> list? exact-nonnegative-integer?)]
           [points->bw (-> list? exact-nonnegative-integer? list?)]

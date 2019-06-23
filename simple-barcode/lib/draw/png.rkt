@@ -2,12 +2,12 @@
 
 (require racket/draw)
 
-(require "lib.rkt")
+(require "parameters.rkt")
 
 (provide (contract-out
           [draw-png (-> path-string? procedure? void?)]
-          [draw-png-bars (-> string? #:x natural? #:y natural? void?)]
-          [draw-png-text (-> string? #:x natural? #:y natural? #:font_size natural ? void?)]
+          [draw-png-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
+          [draw-png-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
           ))
 
 (define *dc* (make-parameter #f))
@@ -20,9 +20,9 @@
 
     (parameterize
      (
-      [dc (new bitmap-dc% [bitmap target])]
+      [*dc* (new bitmap-dc% [bitmap target])]
       )
-     (when (not (string=? back_color "transparent"))
+     (when (not (string=? (*back_color*) "transparent"))
           (set-color (*dc*) (*back_color*))
           (send (*dc*) draw-rectangle 0 0 (*width*) (*height*)))
 
@@ -45,8 +45,8 @@
              [loop_x x])
     (when (not (null? loop_list))
           (when (char=? (car loop_list) #\1)
-                (send (*dc*) draw-rectangle loop_x y (*bar_width*) bar_height))
-          (loop (cdr loop_list) (+ loop_x (*bar_width*))))))
+                (send (*dc*) draw-rectangle loop_x y (*brick_width*) bar_height))
+          (loop (cdr loop_list) (+ loop_x (*brick_width*))))))
 
 (define (draw-png-text txt #:x x #:y y #:font_size font_size)
   (send (*dc*) draw-text txt x y font_size))

@@ -13,7 +13,7 @@
           ))
 
 (require "share.rkt")
-(require "draw.rkt")
+(require "draw/draw.rkt")
 
 (define *code_list*
   '(
@@ -419,5 +419,6 @@
                  (begin
                    (draw-text (string (hash-ref extend_chars_char_map (car loop_list)))
                               #:x (+ start_x (* 8 (*brick_width*)))
-                              #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
+                              #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*))
+                              #:font_size (*brick_width*))
                    (loop (cdr loop_list) (+ start_x (* (add1 (* *code39_bars_length* 2)) (*brick_width*)))))))))))))

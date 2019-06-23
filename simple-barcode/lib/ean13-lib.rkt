@@ -7,12 +7,11 @@
           [ean13->bars (-> string? string?)]
           [get-ean13-dimension (-> exact-nonnegative-integer? pair?)]
           [draw-ean13 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
-          [draw-ean13-raw (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
           [get-bar-char-map (-> hash?)]
           ))
 
 (require "share.rkt")
-(require "draw.rkt")
+(require "draw/draw.rkt")
 
 (define (ean13-checksum barcode)
   (let-values ([
@@ -140,8 +139,8 @@
 
 (define (get-ean13-dimension brick_width)
   (cons
-   (* (+ *quiet_zone_width* 3 3 (* 6 *ean13_bars_length*) 5 (* 6 *ean13_bars_length*) 3 *quiet_zone_width*) brick_width)
-   (* (+ *top_margin* *bar_height* *ean13_down_margin*) brick_width)))
+   (* (+ (*quiet_zone_width*) 3 3 (* 6 *ean13_bars_length*) 5 (* 6 *ean13_bars_length*) 3 (*quiet_zone_width*)) (*brick_width*))
+   (* (+ (*top_margin*) (*bar_height*) *ean13_down_margin*) (*brick_width*))))
 
 (define (draw-ean13 type ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (if (regexp-match #px"^[0-9]{12}$" ean13)
@@ -152,6 +151,7 @@
                     (number->string (ean13-checksum ean13))))])
         (draw-ean13-raw
          type
+         ean13
          bars
          dimension
          file_name
@@ -164,14 +164,14 @@
 (define *ean13_bars_length* 7)
 (define *ean13_down_margin* 20)
 
-(define (draw-ean13-raw type bars dimension file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [_brick_width 2])
+(define (draw-ean13-raw type ean13 bars dimension file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [_brick_width 2])
   (parameterize
       (
-       [width (car dimension)]
-       [height (cdr dimension)]
-       [front_color (car color_pair)]
-       [back_color (cdr color_pair)]
-       [brick_width _brick_width]
+       [*width* (car dimension)]
+       [*height* (cdr dimension)]
+       [*front_color* (car color_pair)]
+       [*back_color* (cdr color_pair)]
+       [*brick_width* _brick_width]
        )
 
     (let* ([x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
@@ -197,7 +197,7 @@
          (draw-text type (substring ean13 0 1) (- x (* 6 (*brick_width*))) (* (+ (*top_margin*) bar_height) (*brick_width*)))
 
          (let loop ([loop_list (cdr (string->list ean13))]
-                    [start_x (+ x (* 3 brick_width))])
+                    [start_x (+ x (* 3 (*brick_width*)))])
            (when (not (null? loop_list))
              (draw-text type (string (car loop_list)) (+ start_x (* 2 (*brick_width*))) (* (+ (*top_margin*) bar_height 2) (*brick_width*)))
              (if (= (length loop_list) *ean13_bars_length*)
