@@ -7,6 +7,7 @@
 (define deps '("base"
                "rackunit-lib"
                "draw-lib"
+               "simple-svg"
                ))
 
 (define build-deps '("racket-doc"
