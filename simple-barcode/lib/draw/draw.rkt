@@ -2,6 +2,7 @@
 
 (require "parameters.rkt")
 (require "png.rkt")
+(require "svg.rkt")
 
 (provide (contract-out
           [*width* parameter?]
@@ -13,17 +14,21 @@
           [*quiet_zone_width* parameter?]
           [*top_margin* parameter?]
           [*code_down_margin* parameter?]
-          [drawing (-> (or/c 'png 'svg) path-string? procedure? boolean?)]
+          [drawing (-> (or/c 'png 'svg) path-string? procedure? void?)]
           [draw-bars (-> (or/c 'png 'svg) string? #:x natural? #:y natural? #:bar_height natural? void?)]
           [draw-png-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
+          [draw-svg-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
           [draw-text (-> (or/c 'png 'svg) string? #:x natural? #:y natural? #:font_size natural? void?)]
           [draw-png-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
+          [draw-svg-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
           ))
 
 (define (drawing type file_name draw-func)
   (cond
    [(eq? type 'png)
     (draw-png file_name draw-func)]
+   [(eq? type 'svg)
+    (draw-svg file_name draw-func)]
    [else
     (draw-png file_name draw-func)]
    ))
@@ -32,6 +37,8 @@
   (cond
    [(eq? type 'png)
     (draw-png-bars bars #:x x #:y y #:bar_height bar_height)]
+   [(eq? type 'svg)
+    (draw-svg-bars bars #:x x #:y y #:bar_height bar_height)]
    [else
     (draw-png-bars bars #:x x #:y y #:bar_height bar_height)]
    ))
@@ -40,6 +47,8 @@
   (cond
    [(eq? type 'png)
     (draw-png-text txt #:x x #:y y #:font_size font_size)]
+   [(eq? type 'svg)
+    (draw-svg-text txt #:x x #:y y #:font_size font_size)]
    [else
     (draw-png-text txt #:x x #:y y #:font_size font_size)]
    ))

@@ -9,7 +9,7 @@
           [code128-bars-checksum (-> string? natural?)]
           [code128->bars (-> list? string?)]
           [get-code128-dimension (-> natural? pair?)]
-          [draw-code128 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) boolean?)]
+          [draw-code128 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) void?)]
           [code128-bar->string (-> string? string?)]
           [code128-verify (-> string? boolean?)]
           ))

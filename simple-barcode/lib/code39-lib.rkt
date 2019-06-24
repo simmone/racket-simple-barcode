@@ -6,8 +6,8 @@
           [code39->bars (-> string? string?)]
           [code39-checksum (-> string? natural?)]
           [get-code39-dimension (-> natural? pair?)]
-          [draw-code39 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) boolean?)]
-          [draw-code39-checksum (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) boolean?)]
+          [draw-code39 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) void?)]
+          [draw-code39-checksum (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) void?)]
           [code39-bar->string (-> string? boolean? string?)]
           [code39-verify (-> string? boolean?)]
           ))

@@ -1,7 +1,7 @@
 #lang racket
 
 (provide (contract-out 
-          [barcode-write (->* ((or/c 'png 'svg) string? path-string?) (#:code_type symbol? #:color_pair pair? #:brick_width natural?) boolean?)]
+          [barcode-write (->* ((or/c 'png 'svg) string? path-string?) (#:code_type symbol? #:color_pair pair? #:brick_width natural?) void?)]
           [barcode-read (->* (path-string?) (#:code_type symbol?) string?)]
           ))
 

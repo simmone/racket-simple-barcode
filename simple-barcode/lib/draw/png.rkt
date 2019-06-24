@@ -5,7 +5,7 @@
 (require "parameters.rkt")
 
 (provide (contract-out
-          [draw-png (-> path-string? procedure? boolean?)]
+          [draw-png (-> path-string? procedure? void?)]
           [draw-png-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
           [draw-png-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
           ))
@@ -34,7 +34,9 @@
 
      (draw-func)
 
-     (send (send (*dc*) get-bitmap) save-file file_name 'png))))
+     (send (send (*dc*) get-bitmap) save-file file_name 'png)
+    
+     (void))))
 
 (define (draw-png-bars bars #:x x #:y y #:bar_height bar_height)
   (let loop ([loop_list (string->list bars)]

@@ -6,7 +6,7 @@
           [ean13-bar->string (-> string? string?)]
           [ean13->bars (-> string? string?)]
           [get-ean13-dimension (-> (cons/c natural? natural?))]
-          [draw-ean13 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) boolean?)]
+          [draw-ean13 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) void?)]
           [get-bar-char-map (-> hash?)]
           ))
 
@@ -163,31 +163,31 @@
            [*back_color* (cdr color_pair)]
            )
 
-          (let* ([real_x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
-                 [real_y (* (add1 (*top_margin*)) (*brick_width*))]
-                 [real_bar_height (* (*bar_height*) (*brick_width*))]
-                 [real_foot_height (* (+ (*bar_height*) *foot_height*) (*brick_width*))])
+          (let* ([x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
+                 [y (* (add1 (*top_margin*)) (*brick_width*))]
+                 [bar_height (* (*bar_height*) (*brick_width*))]
+                 [foot_height (* (+ (*bar_height*) *foot_height*) (*brick_width*))])
 
             (drawing
              type
              file_name
              (lambda ()
-               (draw-bars type bars #:x real_x #:y real_y #:bar_height real_bar_height)
+               (draw-bars type bars #:x x #:y y #:bar_height bar_height)
 
                ;; left split
-               (draw-bars type "101" #:x real_x #:y real_y #:bar_height real_foot_height)
+               (draw-bars type "101" #:x x #:y y #:bar_height foot_height)
 
                ;; middle split
-               (draw-bars type "01010" #:x (+ real_x (* 45 (*brick_width*))) #:y real_y #:bar_height real_foot_height)
+               (draw-bars type "01010" #:x (+ x (* 45 (*brick_width*))) #:y y #:bar_height foot_height)
 
                ;; right split
-               (draw-bars type "101" #:x (+ real_x (* 92 (*brick_width*))) #:y real_y #:bar_height real_foot_height)
+               (draw-bars type "101" #:x (+ x (* 92 (*brick_width*))) #:y y #:bar_height foot_height)
 
                ;; first char
-               (draw-text type (substring ean13 0 1) #:x (- real_x (* 6 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*)) (*brick_width*)) #:font_size (*brick_width*))
+               (draw-text type (substring ean13 0 1) #:x (- x (* 6 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*)) (*brick_width*)) #:font_size (*brick_width*))
 
                (let loop ([loop_list (cdr (string->list ean13))]
-                          [start_x (+ real_x (* 3 (*brick_width*)))])
+                          [start_x (+ x (* 3 (*brick_width*)))])
                  (when (not (null? loop_list))
                        (draw-text type (string (car loop_list)) #:x (+ start_x (* 2 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)) #:font_size (*brick_width*))
                        (if (= (length loop_list) *ean13_bars_length*)
@@ -195,6 +195,6 @@
                            (loop (cdr loop_list) (+ start_x (* *ean13_bars_length* (*brick_width*)))))))
 
                ;; last char
-               (draw-text type ">" #:x (+ real_x (* (+ 95 3) (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*)) (*brick_width*)) #:font_size (*brick_width*)))))))
+               (draw-text type ">" #:x (+ x (* (+ 95 3) (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*)) (*brick_width*)) #:font_size (*brick_width*)))))))
        (error
         "invalid ean13 string: length is 12, only digit"))))
