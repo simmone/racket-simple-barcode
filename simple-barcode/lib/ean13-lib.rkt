@@ -139,8 +139,8 @@
 
 (define (get-ean13-dimension brick_width)
   (cons
-   (* (+ (*quiet_zone_width*) 3 3 (* 6 *ean13_bars_length*) 5 (* 6 *ean13_bars_length*) 3 (*quiet_zone_width*)) (*brick_width*))
-   (* (+ (*top_margin*) (*bar_height*) *ean13_down_margin*) (*brick_width*))))
+   (* (+ (*quiet_zone_width*) 3 3 (* 6 *ean13_bars_length*) 5 (* 6 *ean13_bars_length*) 3 (*quiet_zone_width*)) brick_width)
+   (* (+ (*top_margin*) (*bar_height*) *ean13_down_margin*) brick_width)))
 
 (define (draw-ean13 type ean13 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
   (if (regexp-match #px"^[0-9]{12}$" ean13)
@@ -149,6 +149,7 @@
                    (string-append
                     ean13
                     (number->string (ean13-checksum ean13))))])
+        (printf "dimension:~a, type:~a\n" dimension type)
         (draw-ean13-raw
          type
          ean13
@@ -166,43 +167,59 @@
 
 (define (draw-ean13-raw type ean13 bars dimension file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [_brick_width 2])
   (parameterize
-      (
-       [*width* (car dimension)]
-       [*height* (cdr dimension)]
-       [*front_color* (car color_pair)]
-       [*back_color* (cdr color_pair)]
-       [*brick_width* _brick_width]
-       )
+   (
+    [*width* (car dimension)]
+    [*height* (cdr dimension)]
+    [*front_color* (car color_pair)]
+    [*back_color* (cdr color_pair)]
+    [*brick_width* _brick_width]
+    )
 
-    (let* ([x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
-           [y (* (add1 (*top_margin*)) (*brick_width*))]
-           [bar_height (* (*brick_width*) (*bar_height*))]
-           [foot_height (* (*brick_width*) (+ (*bar_height*) *foot_height*))])
-      (drawing
-       type
-       file_name
-       (lambda ()
-         (draw-bars type bars #:x x #:y y #:bar_height bar_height)
-         
-         ;; left split
-         (draw-bars type "101" #:x x #:y y #:bar_height foot_height)
+   (printf "h1\n")
+   (let* ([x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
+          [y (* (add1 (*top_margin*)) (*brick_width*))]
+          [bar_height (* (*brick_width*) (*bar_height*))]
+          [foot_height (* (*brick_width*) (+ (*bar_height*) *foot_height*))])
 
-         ;; middle split
-         (draw-bars type "01010" #:x (+ x (* 45 (*brick_width*))) #:y y #:bar_width (*brick_width*) #:bar_height foot_height)
+     (printf "h2\n")
+     (drawing
+      type
+      file_name
+      (lambda ()
+        (printf "h3\n")
+        (draw-bars type bars #:x x #:y y #:bar_height bar_height)
 
-         ;; right split
-         (draw-bars type "101" #:x (+ x (* 92 (*brick_width*))) #:y y #:bar_width (*brick_width*) #:bar_height foot_height)
+        (printf "h4\n")
+        
+        ;; left split
+        (draw-bars type "101" #:x x #:y y #:bar_height foot_height)
 
-         ;; first char
-         (draw-text type (substring ean13 0 1) (- x (* 6 (*brick_width*))) (* (+ (*top_margin*) bar_height) (*brick_width*)))
+        (printf "h5\n")
 
-         (let loop ([loop_list (cdr (string->list ean13))]
-                    [start_x (+ x (* 3 (*brick_width*)))])
-           (when (not (null? loop_list))
-             (draw-text type (string (car loop_list)) (+ start_x (* 2 (*brick_width*))) (* (+ (*top_margin*) bar_height 2) (*brick_width*)))
-             (if (= (length loop_list) *ean13_bars_length*)
-                 (loop (cdr loop_list) (+ start_x (* 12 (*brick_width*))))
-                 (loop (cdr loop_list) (+ start_x (* *ean13_bars_length* (*brick_width*)))))))
+        ;; middle split
+        (draw-bars type "01010" #:x (+ x (* 45 (*brick_width*))) #:y y #:bar_height foot_height)
 
-         ;; last char
-         (draw-text type ">" (+ x (* (+ 95 3) (*brick_width*))) (* (+ (*top_margin*) bar_height) (*brick_width*))))))))
+        (printf "h6\n")
+
+        ;; right split
+        (draw-bars type "101" #:x (+ x (* 92 (*brick_width*))) #:y y #:bar_height foot_height)
+
+        (printf "h7\n")
+
+        ;; first char
+        (draw-text type (substring ean13 0 1) #:x (- x (* 6 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*)) (*brick_width*)) #:font_size (*brick_width*))
+
+        (printf "h8\n")
+
+        (let loop ([loop_list (cdr (string->list ean13))]
+                   [start_x (+ x (* 3 (*brick_width*)))])
+          (when (not (null? loop_list))
+                (draw-text type (string (car loop_list)) #:x (+ start_x (* 2 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)) #:font_size (*brick_width*))
+                (if (= (length loop_list) *ean13_bars_length*)
+                    (loop (cdr loop_list) (+ start_x (* 12 (*brick_width*))))
+                    (loop (cdr loop_list) (+ start_x (* *ean13_bars_length* (*brick_width*)))))))
+
+        (printf "h9\n")
+
+        ;; last char
+        (draw-text type ">" #:x (+ x (* (+ 95 3) (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*)) (*brick_width*)) #:font_size (*brick_width*)))))))
