@@ -5,11 +5,11 @@
           [encode-c128 (-> string? list?)]
           [code->value (-> list? list?)]
           [shift-compress (-> list? list?)]
-          [code128-checksum (-> (listof exact-nonnegative-integer?) exact-nonnegative-integer?)]
-          [code128-bars-checksum (-> string? exact-nonnegative-integer?)]
+          [code128-checksum (-> (listof natural?) natural?)]
+          [code128-bars-checksum (-> string? natural?)]
           [code128->bars (-> list? string?)]
-          [get-code128-dimension (-> exact-nonnegative-integer? exact-nonnegative-integer? pair?)]
-          [draw-code128 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
+          [get-code128-dimension (-> natural? pair?)]
+          [draw-code128 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) boolean?)]
           [code128-bar->string (-> string? string?)]
           [code128-verify (-> string? boolean?)]
           ))
@@ -410,10 +410,10 @@
 
 (define *code128_bars_length* 11)
 
-(define (get-code128-dimension code_length brick_width)
+(define (get-code128-dimension code_length)
   (cons
-   (* (+ *quiet_zone_width* (+ (* (sub1 code_length) *code128_bars_length*) 13) *quiet_zone_width*) brick_width)
-   (* (+ *top_margin* *bar_height* *code_down_margin*) brick_width)))
+   (* (+ (*quiet_zone_width*) (+ (* (sub1 code_length) *code128_bars_length*) 13) (*quiet_zone_width*)) (*brick_width*))
+   (* (+ (*top_margin*) (*bar_height*) (*code_down_margin*)) (*brick_width*))))
 
 (define (code128-bar->string bar_string)
   (foldr
@@ -489,39 +489,38 @@
     (= (string->number checksum) actual_checksum)))
 
 (define (draw-code128 type code128 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (let* ([encoded_list (encode-c128 code128)]
-         [data_code_list (shift-compress encoded_list)]
-         [checksum (code128-checksum (code->value data_code_list))]
-         [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
-         [dimension (get-code128-dimension (length code_list) (*brick_width*))]
-         [bars (code128->bars code_list)])
-    
-    (draw-code128-raw type code128 dimension bars file_name #:color_pair color_pair #:brick_width brick_width)))
-
-(define (draw-code128-raw type code128 dimension bars file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [_brick_width 2])
   (parameterize
-      (
-       [width (car dimension)]
-       [height (cdr dimension)]
-       [front_color (car color_pair)]
-       [back_color (cdr color_pair)]
-       [brick_width _brick_width]
-       )
-    (let* (
-           [x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
-           [y (* (add1 (*top_margin*)) (*brick_width*))]
-           [bar_height (* (*brick_width*) (*bar_height*))]
-           [foot_height (* (*brick_width*) (*bar_height*))])
+      ([*brick_width* brick_width])
+    (let* ([encoded_list (encode-c128 code128)]
+           [data_code_list (shift-compress encoded_list)]
+           [checksum (code128-checksum (code->value data_code_list))]
+           [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
+           [dimension (get-code128-dimension (length code_list))]
+           [bars (code128->bars code_list)])
+      
+      (parameterize
+          (
+           [*width* (car dimension)]
+           [*height* (cdr dimension)]
+           [*front_color* (car color_pair)]
+           [*back_color* (cdr color_pair)]
+           )
+        (let* (
+               [x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
+               [y (* (add1 (*top_margin*)) (*brick_width*))]
+               [bar_height (* (*brick_width*) (*bar_height*))]
+               [foot_height (* (*brick_width*) (*bar_height*))])
 
-      (drawing
-       type
-       file_name
-       (lambda ()
-         (draw-bars bars #:x x #:y y #:bar_height bar_height)
+          (drawing
+           type
+           file_name
+           (lambda ()
+             (draw-bars type bars #:x x #:y y #:bar_height bar_height)
 
-         (draw-text
-          (regexp-replace* #rx"(.)" code128 "\\  ")
-          (+ x (* (+ *code128_bars_length* 3) (*brick_width*)))
-          (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*))
-          (*brick_width*)
-          ))))))
+             (draw-text
+              type
+              (regexp-replace* #rx"(.)" code128 "\\  ")
+              #:x (+ x (* (+ *code128_bars_length* 3) (*brick_width*)))
+              #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*))
+              #:font_size (*brick_width*)
+              ))))))))
