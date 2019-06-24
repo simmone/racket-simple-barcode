@@ -9,7 +9,6 @@
           [*quiet_zone_width* parameter?]
           [*bar_height* parameter?]
           [*top_margin* parameter?]
-          [*font_size* parameter?]
           [*code_down_margin* parameter?]
           ))
 
@@ -24,7 +23,6 @@
 (define *quiet_zone_width* (make-parameter 10))
 (define *bar_height* (make-parameter 60))
 (define *top_margin* (make-parameter 10))
-(define *font_size* (make-parameter 5))
 
 (define *code_down_margin* (make-parameter 15))
 

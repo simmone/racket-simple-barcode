@@ -12,7 +12,6 @@
           [*bar_height* parameter?]
           [*quiet_zone_width* parameter?]
           [*top_margin* parameter?]
-          [*font_size* parameter?]
           [*code_down_margin* parameter?]
           [drawing (-> (or/c 'png 'svg) path-string? procedure? boolean?)]
           [draw-bars (-> (or/c 'png 'svg) string? #:x natural? #:y natural? #:bar_height natural? void?)]
