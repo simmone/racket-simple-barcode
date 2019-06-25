@@ -86,19 +86,14 @@ change front and background color:<br>
 set transparent background:<br>
 ![ScreenShot](simple-barcode/example/png/barcode_ean13_trans.png)
 
-7501031311309,7501031311309,7501031311309,7501031311309
-
 code128, brick_width = 2:<br>
 ![ScreenShot](simple-barcode/example/png/barcode_code128.png)
-chenxiao770117
 
 code39, brick_width = 2:<br>
 ![ScreenShot](simple-barcode/example/png/barcode_code39.png)
-CHEN
 
 code39 add checksum, brick_width = 2:<br>
 ![ScreenShot](simple-barcode/example/png/barcode_code39_checksum.png)
-CHEN
 
 # Svg Example
 ```racket
