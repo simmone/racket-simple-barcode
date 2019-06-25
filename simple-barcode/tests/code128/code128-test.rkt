@@ -165,9 +165,15 @@
           (void)
           )
         (lambda ()
-          (draw-code128 'png "750103131130" code128_write_test1 #:brick_width 5)
-          (draw-code128 'png "chenxiao770117" code128_write_test2 #:brick_width 5)
-          )
+          (parameterize
+              (
+               [*front_color* "black"]
+               [*back_color* "white"]
+               [*brick_width* 4]
+               [*font_size* 4]
+               )
+            (draw-code128 'png "750103131130" code128_write_test1)
+            (draw-code128 'png "chenxiao770117" code128_write_test2)))
         (lambda ()
           (delete-file code128_write_test1)
           (delete-file code128_write_test2)

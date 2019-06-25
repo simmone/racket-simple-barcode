@@ -172,10 +172,16 @@
           (void)
           )
         (lambda ()
-          (draw-code39 'png "CHEN" code39_write_test1)
-          (draw-code39 'png "chenxiao" code39_write_test2)
-          (draw-code39-checksum 'png "CHEN" code39_write_test3)
-          )
+          (parameterize
+              (
+               [*front_color* "black"]
+               [*back_color* "white"]
+               [*brick_width* 4]
+               [*font_size* 4]
+               )
+            (draw-code39 'png "CHEN" code39_write_test1)
+            (draw-code39 'png "chenxiao" code39_write_test2)
+            (draw-code39-checksum 'png "CHEN" code39_write_test3)))
         (lambda ()
           (delete-file code39_write_test1)
           (delete-file code39_write_test2)
