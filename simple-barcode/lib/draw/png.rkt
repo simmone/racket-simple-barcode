@@ -7,7 +7,7 @@
 (provide (contract-out
           [draw-png (-> natural? natural? path-string? procedure? void?)]
           [draw-png-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
-          [draw-png-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
+          [draw-png-text (-> string? #:x natural? #:y natural? void?)]
           ))
 
 (define *dc* (make-parameter #f))
@@ -46,6 +46,6 @@
                 (send (*dc*) draw-rectangle loop_x y (*brick_width*) bar_height))
           (loop (cdr loop_list) (+ loop_x (*brick_width*))))))
 
-(define (draw-png-text txt #:x x #:y y #:font_size font_size)
-  (send (*dc*) set-font (make-font #:size-in-pixels? #t #:size (* font_size (*brick_width*)) #:face "Monospace" #:family 'modern))
-  (send (*dc*) draw-text txt x y font_size))
+(define (draw-png-text txt #:x x #:y y)
+  (send (*dc*) set-font (make-font #:size-in-pixels? #t #:size (* (*font_size*) (*brick_width*)) #:face "Monospace" #:family 'modern))
+  (send (*dc*) draw-text txt x y (*font_size*)))

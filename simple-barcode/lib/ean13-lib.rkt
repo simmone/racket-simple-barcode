@@ -6,7 +6,7 @@
           [ean13-bar->string (-> string? string?)]
           [ean13->bars (-> string? string?)]
           [get-ean13-dimension (-> (cons/c natural? natural?))]
-          [draw-ean13 (-> (or/c 'png 'svg) string? path-string?)]
+          [draw-ean13 (-> (or/c 'png 'svg) string? path-string? void?)]
           [get-bar-char-map (-> hash?)]
           ))
 
@@ -160,6 +160,8 @@
 
         (drawing
          type
+         (car dimension)
+         (cdr dimension)
          file_name
          (lambda ()
            (draw-bars type bars #:x x #:y y #:bar_height bar_height)

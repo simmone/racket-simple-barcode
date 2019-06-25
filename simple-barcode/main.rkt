@@ -27,11 +27,11 @@
 
    (cond
     [(eq? code_type 'ean13)
-     (draw-ean13 type code)]
+     (draw-ean13 type code file_name)]
     [(eq? code_type 'code128)
-     (draw-code128 type code)]
+     (draw-code128 type code file_name)]
     [(eq? code_type 'code39)
-     (draw-code39 type code)]
+     (draw-code39 type code file_name)]
     [(eq? code_type 'code39_checksum)
      (draw-code39-checksum type code file_name)]
     )))

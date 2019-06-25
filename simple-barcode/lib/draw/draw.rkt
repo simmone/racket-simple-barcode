@@ -8,29 +8,30 @@
           [*width* parameter?]
           [*height* parameter?]
           [*front_color* parameter?]
+          [*font_size* parameter?]
           [*back_color* parameter?]
           [*brick_width* parameter?]
           [*bar_height* parameter?]
           [*quiet_zone_width* parameter?]
           [*top_margin* parameter?]
           [*code_down_margin* parameter?]
-          [drawing (-> (or/c 'png 'svg) path-string? procedure? void?)]
+          [drawing (-> (or/c 'png 'svg) natural? natural? path-string? procedure? void?)]
           [draw-bars (-> (or/c 'png 'svg) string? #:x natural? #:y natural? #:bar_height natural? void?)]
           [draw-png-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
           [draw-svg-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
-          [draw-text (-> (or/c 'png 'svg) string? #:x natural? #:y natural? #:font_size natural? void?)]
-          [draw-png-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
+          [draw-text (-> (or/c 'png 'svg) string? #:x natural? #:y natural? void?)]
+          [draw-png-text (-> string? #:x natural? #:y natural? void?)]
           [draw-svg-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
           ))
 
-(define (drawing type file_name draw-func)
+(define (drawing type width height file_name draw-func)
   (cond
    [(eq? type 'png)
-    (draw-png file_name draw-func)]
+    (draw-png width height file_name draw-func)]
    [(eq? type 'svg)
     (draw-svg file_name draw-func)]
    [else
-    (draw-png file_name draw-func)]
+    (draw-png width height file_name draw-func)]
    ))
 
 (define (draw-bars type bars #:x x #:y y #:bar_height bar_height)
@@ -43,12 +44,12 @@
     (draw-png-bars bars #:x x #:y y #:bar_height bar_height)]
    ))
 
-(define (draw-text type txt #:x x #:y y #:font_size font_size)
+(define (draw-text type txt #:x x #:y y)
   (cond
    [(eq? type 'png)
-    (draw-png-text txt #:x x #:y y #:font_size font_size)]
+    (draw-png-text txt #:x x #:y y)]
    [(eq? type 'svg)
-    (draw-svg-text txt #:x x #:y y #:font_size font_size)]
+    (draw-svg-text txt #:x x #:y y)]
    [else
-    (draw-png-text txt #:x x #:y y #:font_size font_size)]
+    (draw-png-text txt #:x x #:y y)]
    ))
