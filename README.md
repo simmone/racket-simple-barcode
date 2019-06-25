@@ -10,8 +10,6 @@ A Barcode reader and writer for Racket
 
 select a type, size, color, then write a string to barcode.
 
-there is also a complete read and write example on github:@link["https://github.com/simmone/racket-simple-barcode/blob/master/simple-barcode/example/png/png-example.rkt"]{includedin the source}.
-
 ```racket
 (barcode-write
               [output_type (or/c 'png 'svg)]
@@ -95,7 +93,7 @@ code128, brick_width = 2:<br>
 chenxiao770117
 
 code39, brick_width = 2:<br>
-![ScreenShot](simple-barcode/example/pngbarcode_code39.png)
+![ScreenShot](simple-barcode/example/png/barcode_code39.png)
 CHEN
 
 code39 add checksum, brick_width = 2:<br>
@@ -144,7 +142,7 @@ code128, brick_width = 2:<br>
 ![ScreenShot](simple-barcode/example/svg/barcode_code128.svg)
 
 code39, brick_width = 2:<br>
-![ScreenShot](simple-barcode/example/svgbarcode_code39.svg)
+![ScreenShot](simple-barcode/example/svg/barcode_code39.svg)
 
 code39 add checksum, brick_width = 2:<br>
 ![ScreenShot](simple-barcode/example/svg/barcode_code39_checksum.svg)
