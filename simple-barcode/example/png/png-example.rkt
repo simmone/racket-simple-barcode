@@ -2,12 +2,14 @@
 
 ;; (require simple-barcode)
 
-(require "../main.rkt")
+(require "../../main.rkt")
 
-(barcode-write 'svg "750103131130" "barcode_ean13.svg")
-;; 
-;; (barcode-write 'png "750103131130" "barcode_ean13_w5.png" #:brick_width 5)
-;; 
+(barcode-write 'png "750103131130" "barcode_ean13.png")
+
+(barcode-write 'png "750103131130" "barcode_ean13_w5.png" #:brick_width 5)
+
+(barcode-write 'png "750103131130" "barcode_ean13_w10.png" #:brick_width 10 #:font_size 8)
+
 ;; (barcode-write 'png "750103131130" "barcode_ean13_color.png" #:color_pair '("red" . "gray"))
 ;; 
 ;; (barcode-write 'png "750103131130" "barcode_ean13_trans.png" #:color_pair '("red" . "transparent"))

@@ -5,18 +5,18 @@
 (require "parameters.rkt")
 
 (provide (contract-out
-          [draw-png (-> path-string? procedure? void?)]
+          [draw-png (-> natural? natural? path-string? procedure? void?)]
           [draw-png-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
           [draw-png-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
           ))
 
 (define *dc* (make-parameter #f))
 
-(define (draw-png file_name draw-func)
+(define (draw-png width height file_name draw-func)
   (let* ([x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
          [y (* (add1 (*top_margin*)) (*brick_width*))]
          [bar_height (* (*brick_width*) (*bar_height*))]
-         [target (make-bitmap (*width*) (*height*))])
+         [target (make-bitmap width height)])
 
     (parameterize
      (
@@ -26,7 +26,7 @@
      (when (not (string=? (*back_color*) "transparent"))
            (send (*dc*) set-pen (*back_color*) 1 'solid)
            (send (*dc*) set-brush (*back_color*) 'solid)
-           (send (*dc*) draw-rectangle 0 0 (*width*) (*height*)))
+           (send (*dc*) draw-rectangle 0 0 width height))
      
      (send (*dc*) set-pen (*front_color*) 1 'solid)
      (send (*dc*) set-brush (*front_color*) 'solid)

@@ -44,8 +44,9 @@
         (loop (cdr loop_list) (+ loop_x (*brick_width*)))))))
 
 (define (draw-svg-text txt #:x x #:y y #:font_size font_size)
-  (let ([text (svg-def-text txt #:font-size? (+ 2 (* (*brick_width*) font_size)))]
-        [text_sstyle (sstyle-new)])
+  (let* ([actual_font_size (* (add1 (*brick_width*)) font_size)]
+         [text (svg-def-text txt #:font-size? actual_font_size)]
+         [text_sstyle (sstyle-new)])
     (sstyle-set! text_sstyle 'fill (*front_color*))
-    (svg-use-shape text text_sstyle #:at? (cons x (+ 5 y)))))
+    (svg-use-shape text text_sstyle #:at? (cons x (+ y (floor (* actual_font_size (/ 2 3))))))))
 
