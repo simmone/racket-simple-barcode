@@ -1,0 +1,95 @@
+<svg
+    version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="590" height="450"
+    >
+  <defs>
+    <rect id="s1" width="590" height="450" />
+    <text id="s10" font-size="18" >0</text>
+    <text id="s11" font-size="18" >3</text>
+    <text id="s12" font-size="18" >1</text>
+    <text id="s13" font-size="18" >3</text>
+    <text id="s14" font-size="18" >1</text>
+    <text id="s15" font-size="18" >1</text>
+    <text id="s16" font-size="18" >3</text>
+    <text id="s17" font-size="18" >0</text>
+    <text id="s18" font-size="18" >></text>
+    <rect id="s2" width="5" height="300" />
+    <rect id="s3" width="5" height="335" />
+    <rect id="s4" width="5" height="335" />
+    <rect id="s5" width="5" height="335" />
+    <text id="s6" font-size="18" >7</text>
+    <text id="s7" font-size="18" >5</text>
+    <text id="s8" font-size="18" >0</text>
+    <text id="s9" font-size="18" >1</text>
+  </defs>
+
+  <symbol id="default">
+    <use xlink:href="#s1" fill="white" />
+    <use xlink:href="#s2" x="75" y="55" fill="black" />
+    <use xlink:href="#s2" x="80" y="55" fill="black" />
+    <use xlink:href="#s2" x="100" y="55" fill="black" />
+    <use xlink:href="#s2" x="110" y="55" fill="black" />
+    <use xlink:href="#s2" x="125" y="55" fill="black" />
+    <use xlink:href="#s2" x="130" y="55" fill="black" />
+    <use xlink:href="#s2" x="135" y="55" fill="black" />
+    <use xlink:href="#s2" x="150" y="55" fill="black" />
+    <use xlink:href="#s2" x="155" y="55" fill="black" />
+    <use xlink:href="#s2" x="170" y="55" fill="black" />
+    <use xlink:href="#s2" x="180" y="55" fill="black" />
+    <use xlink:href="#s2" x="195" y="55" fill="black" />
+    <use xlink:href="#s2" x="200" y="55" fill="black" />
+    <use xlink:href="#s2" x="205" y="55" fill="black" />
+    <use xlink:href="#s2" x="215" y="55" fill="black" />
+    <use xlink:href="#s2" x="220" y="55" fill="black" />
+    <use xlink:href="#s2" x="225" y="55" fill="black" />
+    <use xlink:href="#s2" x="230" y="55" fill="black" />
+    <use xlink:href="#s2" x="240" y="55" fill="black" />
+    <use xlink:href="#s2" x="250" y="55" fill="black" />
+    <use xlink:href="#s2" x="255" y="55" fill="black" />
+    <use xlink:href="#s2" x="270" y="55" fill="black" />
+    <use xlink:href="#s2" x="275" y="55" fill="black" />
+    <use xlink:href="#s2" x="305" y="55" fill="black" />
+    <use xlink:href="#s2" x="330" y="55" fill="black" />
+    <use xlink:href="#s2" x="340" y="55" fill="black" />
+    <use xlink:href="#s2" x="345" y="55" fill="black" />
+    <use xlink:href="#s2" x="360" y="55" fill="black" />
+    <use xlink:href="#s2" x="365" y="55" fill="black" />
+    <use xlink:href="#s2" x="375" y="55" fill="black" />
+    <use xlink:href="#s2" x="380" y="55" fill="black" />
+    <use xlink:href="#s2" x="395" y="55" fill="black" />
+    <use xlink:href="#s2" x="400" y="55" fill="black" />
+    <use xlink:href="#s2" x="410" y="55" fill="black" />
+    <use xlink:href="#s2" x="435" y="55" fill="black" />
+    <use xlink:href="#s2" x="445" y="55" fill="black" />
+    <use xlink:href="#s2" x="450" y="55" fill="black" />
+    <use xlink:href="#s2" x="455" y="55" fill="black" />
+    <use xlink:href="#s2" x="470" y="55" fill="black" />
+    <use xlink:href="#s2" x="480" y="55" fill="black" />
+    <use xlink:href="#s2" x="485" y="55" fill="black" />
+    <use xlink:href="#s2" x="490" y="55" fill="black" />
+    <use xlink:href="#s2" x="500" y="55" fill="black" />
+    <use xlink:href="#s3" x="55" y="55" fill="black" />
+    <use xlink:href="#s3" x="65" y="55" fill="black" />
+    <use xlink:href="#s4" x="285" y="55" fill="black" />
+    <use xlink:href="#s4" x="295" y="55" fill="black" />
+    <use xlink:href="#s5" x="515" y="55" fill="black" />
+    <use xlink:href="#s5" x="525" y="55" fill="black" />
+    <use xlink:href="#s6" x="25" y="362" fill="black" />
+    <use xlink:href="#s7" x="115" y="372" fill="black" />
+    <use xlink:href="#s8" x="150" y="372" fill="black" />
+    <use xlink:href="#s9" x="185" y="372" fill="black" />
+    <use xlink:href="#s10" x="220" y="372" fill="black" />
+    <use xlink:href="#s11" x="255" y="372" fill="black" />
+    <use xlink:href="#s12" x="315" y="372" fill="black" />
+    <use xlink:href="#s13" x="350" y="372" fill="black" />
+    <use xlink:href="#s14" x="385" y="372" fill="black" />
+    <use xlink:href="#s15" x="420" y="372" fill="black" />
+    <use xlink:href="#s16" x="455" y="372" fill="black" />
+    <use xlink:href="#s17" x="490" y="372" fill="black" />
+    <use xlink:href="#s18" x="545" y="362" fill="black" />
+  </symbol>
+
+  <use xlink:href="#default" fill="none" />
+</svg>

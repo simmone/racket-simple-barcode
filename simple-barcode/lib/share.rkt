@@ -1,69 +1,16 @@
 #lang racket
 
 (provide (contract-out
-          [set-color (-> (is-a?/c bitmap-dc%) (or/c (is-a?/c color%) string?) void?)]
           [pic->points (-> path-string? (listof list?))]
-          [points->pic (-> (listof list?) path-string? hash? any)]
           [find-threshold (-> list? exact-nonnegative-integer?)]
           [points->bw (-> list? exact-nonnegative-integer? list?)]
           [points->strict-bw (-> list? list?)]
           [squash-points (-> list? exact-nonnegative-integer? pair?)]
-          [*quiet_zone_width* exact-nonnegative-integer?]
-          [*top_margin* exact-nonnegative-integer?]
-          [*ean13_down_margin* exact-nonnegative-integer?]
-          [*code_down_margin* exact-nonnegative-integer?]
-          [*bar_height* exact-nonnegative-integer?]
-          [*font_size* exact-nonnegative-integer?]
-          [draw-init (->* (exact-nonnegative-integer? exact-nonnegative-integer?) (#:color_pair pair? #:brick_width exact-nonnegative-integer?) (is-a?/c bitmap-dc%))]
-          [draw-bars (-> (is-a?/c bitmap-dc%) string? #:x exact-nonnegative-integer? #:y exact-nonnegative-integer? #:bar_width exact-nonnegative-integer? #:bar_height exact-nonnegative-integer? void?)]
-          [save-bars (-> (is-a?/c bitmap-dc%) path-string? boolean?)]
           [search-barcode-on-row (-> list? symbol? (or/c string? #f))]
           [search-barcode (-> (listof list?) symbol? (or/c string? #f))]
           ))
 
 (require racket/draw)
-
-(define *quiet_zone_width* 10)
-(define *bar_height* 60)
-(define *top_margin* 10)
-(define *ean13_down_margin* 20)
-(define *code_down_margin* 15)
-(define *font_size* 5)
-
-(define (draw-init width height #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (let* ([front_color (car color_pair)]
-         [back_color (cdr color_pair)]
-         [x (* (add1 *quiet_zone_width*) brick_width)]
-         [y (* (add1 *top_margin*) brick_width)]
-         [bar_height (* brick_width *bar_height*)]
-         [target (make-bitmap width height)]
-         [dc (new bitmap-dc% [bitmap target])])
-
-    (when (not (string=? back_color "transparent"))
-          (set-color dc back_color)
-          (send dc draw-rectangle 0 0 width height))
-
-    (set-color dc front_color)
-    (send dc set-text-foreground front_color)
-    (send dc set-font (make-font #:size-in-pixels? #t #:size (* *font_size* brick_width) #:face "Monospace" #:family 'modern))
-    dc))
-
-(define (save-bars dc file_name)
-    (send (send dc get-bitmap) save-file file_name 'png))
-
-(define (draw-bars dc bars #:x x #:y y #:bar_width bar_width #:bar_height bar_height)
-  (let loop ([loop_list (string->list bars)]
-             [loop_x x])
-    (when (not (null? loop_list))
-          (when (char=? (car loop_list) #\1)
-                (send dc draw-rectangle loop_x y bar_width bar_height))
-          (loop (cdr loop_list) (+ loop_x bar_width)))))
-
-(define (set-color dc color)
-  (when (not (string=? color "transparent"))
-        (send dc set-pen color 1 'solid))
-
-  (send dc set-brush color 'solid))
 
 (define (bitmap->points img)
   (let* ([width (send img get-width)]
@@ -108,13 +55,6 @@
                 (reverse col_bytes_list)))
           bytes_list))
         (list->bytes (foldr (lambda (a b) (append a b)) '() (reverse bytes_list))))))
-
-(define (points->pic points_list pic_path pixel_map)
-  (let* ([width (length (car points_list))]
-         [height (length points_list)]
-         [points_pic (make-object bitmap% width height)])
-    (send points_pic set-argb-pixels 0 0 width height (points->pixels points_list pixel_map))
-    (send points_pic save-file pic_path 'png)))
 
 (define (find-threshold point_rows)
   (let row-loop ([loop_row_list point_rows]

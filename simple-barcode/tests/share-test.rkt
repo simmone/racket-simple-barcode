@@ -5,7 +5,7 @@
 (require rackunit "../lib/share.rkt")
 
 (require racket/runtime-path)
-(define-runtime-path ean13_file "../example/barcode_ean13.png")
+(define-runtime-path ean13_file "../example/png/barcode_ean13.png")
 
 (define test-lib
   (test-suite
@@ -15,8 +15,8 @@
     "test-find-threshold"
     
     (let ([points_list (pic->points ean13_file)])
-      (check-equal? (length points_list) 180)
-      (check-equal? (length (car points_list)) 236)
+      (check-equal? (length points_list) 270)
+      (check-equal? (length (car points_list)) 354)
 
       (check-equal? (find-threshold points_list) 382)
     ))

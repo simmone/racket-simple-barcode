@@ -4,6 +4,8 @@
 (require racket/date)
 (require racket/draw)
 
+(require "../../lib/draw/draw.rkt")
+
 (require rackunit "../../lib/code128-lib.rkt")
 
 (require racket/runtime-path)
@@ -94,8 +96,10 @@
    
    (test-case
     "test-get-code128-dimension"
-    
-    (check-equal? (get-code128-dimension 11 1) '(143 . 85))
+
+    (parameterize
+        ([*brick_width* 1])
+      (check-equal? (get-code128-dimension 11) '(143 . 85)))
     )
    
    (test-case
@@ -161,9 +165,15 @@
           (void)
           )
         (lambda ()
-          (draw-code128 "750103131130" code128_write_test1 #:brick_width 5)
-          (draw-code128 "chenxiao770117" code128_write_test2 #:brick_width 5)
-          )
+          (parameterize
+              (
+               [*front_color* "black"]
+               [*back_color* "white"]
+               [*brick_width* 4]
+               [*font_size* 4]
+               )
+            (draw-code128 'png "750103131130" code128_write_test1)
+            (draw-code128 'png "chenxiao770117" code128_write_test2)))
         (lambda ()
           (delete-file code128_write_test1)
           (delete-file code128_write_test2)

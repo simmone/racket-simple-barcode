@@ -5,10 +5,10 @@
 (require rackunit "../../main.rkt")
 
 (require racket/runtime-path)
-(define-runtime-path example_ean13_file "../../example/barcode_ean13.png")
-(define-runtime-path example_ean13_w5_file "../../example/barcode_ean13_w5.png")
-(define-runtime-path example_ean13_color_file "../../example/barcode_ean13_color.png")
-(define-runtime-path example_ean13_trans_file "../../example/barcode_ean13_trans.png")
+(define-runtime-path example_ean13_file "../../example/png/barcode_ean13.png")
+(define-runtime-path example_ean13_w5_file "../../example/png/barcode_ean13_w5.png")
+(define-runtime-path example_ean13_color_file "../../example/png/barcode_ean13_color.png")
+(define-runtime-path example_ean13_trans_file "../../example/png/barcode_ean13_trans.png")
 
 (define-runtime-path extern_ean13_test1 "extern_ean13_test1.png")
 (define-runtime-path extern_code128_test1 "extern_code128_test1.png")

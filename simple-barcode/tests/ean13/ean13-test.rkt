@@ -4,6 +4,8 @@
 (require racket/date)
 (require racket/draw)
 
+(require "../../lib/draw/draw.rkt")
+
 (require rackunit "../../lib/ean13-lib.rkt")
 
 (require racket/runtime-path)
@@ -59,12 +61,12 @@
 
    (test-case
     "test-get-ean13-dimension"
-    
-    (let* ([brick_width 1]
-           [dimension (get-ean13-dimension brick_width)])
-      (check-equal? (car dimension) 118)
-      (check-equal? (cdr dimension) 90)
-      )
+
+    (parameterize
+     ([*brick_width* 1])
+     (let ([dimension (get-ean13-dimension)])
+       (check-equal? (car dimension) 118)
+       (check-equal? (cdr dimension) 90)))
     )
 
    (test-case
@@ -80,13 +82,19 @@
         (lambda ()
           (void))
         (lambda ()
-          (check-exn exn:fail? (lambda () (draw-ean13 "1234567890123" ean13_write_test1)))
-          (check-exn exn:fail? (lambda () (draw-ean13 "12345678901a2" ean13_write_test1)))
-          (draw-ean13 "750103131130" ean13_write_test1)
-          )
+          (parameterize
+              (
+               [*front_color* "black"]
+               [*back_color* "white"]
+               [*brick_width* 4]
+               [*font_size* 4]
+               )
+            (check-exn exn:fail? (lambda () (draw-ean13 'png "1234567890123" ean13_write_test1)))
+            (check-exn exn:fail? (lambda () (draw-ean13 'png "12345678901a2" ean13_write_test1)))
+            (draw-ean13 'png "750103131130" ean13_write_test1)
+            ))
         (lambda ()
-          (delete-file ean13_write_test1)
-          )))
+          (delete-file ean13_write_test1))))
    ))
 
 (run-tests test-lib)

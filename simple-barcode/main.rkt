@@ -1,26 +1,40 @@
 #lang racket
 
 (provide (contract-out 
-          [barcode-write (->* (string? path-string?) (#:code_type symbol? #:color_pair pair? #:brick_width exact-nonnegative-integer?) boolean?)]
+          [barcode-write (->* ((or/c 'png 'svg) string? path-string?) (#:code_type symbol? #:color_pair pair? #:brick_width natural? #:font_size natural?) void?)]
           [barcode-read (->* (path-string?) (#:code_type symbol?) string?)]
           ))
 
 (require "lib/share.rkt")
+(require "lib/draw/draw.rkt")
 (require "lib/ean13-lib.rkt")
 (require "lib/code128-lib.rkt")
 (require "lib/code39-lib.rkt")
 
-(define (barcode-write code file_name #:code_type [code_type 'ean13] #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (cond
-   [(eq? code_type 'ean13)
-    (draw-ean13 code file_name #:color_pair color_pair #:brick_width brick_width)]
-   [(eq? code_type 'code128)
-    (draw-code128 code file_name #:color_pair color_pair #:brick_width brick_width)]
-   [(eq? code_type 'code39)
-    (draw-code39 code file_name #:color_pair color_pair #:brick_width brick_width)]
-   [(eq? code_type 'code39_checksum)
-    (draw-code39-checksum code file_name #:color_pair color_pair #:brick_width brick_width)]
-   ))
+(define (barcode-write type code file_name
+                       #:code_type [code_type 'ean13]
+                       #:color_pair [color_pair '("black" . "white")]
+                       #:brick_width [brick_width 3]
+                       #:font_size [font_size 3]
+                       )
+  (parameterize
+   (
+    [*front_color* (car color_pair)]
+    [*back_color* (cdr color_pair)]
+    [*brick_width* brick_width]
+    [*font_size* font_size]
+    )
+
+   (cond
+    [(eq? code_type 'ean13)
+     (draw-ean13 type code file_name)]
+    [(eq? code_type 'code128)
+     (draw-code128 type code file_name)]
+    [(eq? code_type 'code39)
+     (draw-code39 type code file_name)]
+    [(eq? code_type 'code39_checksum)
+     (draw-code39-checksum type code file_name)]
+    )))
 
 (define (print-points biaoshi points)
   (let loop ([loop_points points]

@@ -4,6 +4,8 @@
 (require racket/date)
 (require racket/draw)
 
+(require "../../lib/draw/draw.rkt")
+
 (require rackunit "../../lib/code39-lib.rkt")
 
 (require racket/runtime-path)
@@ -89,30 +91,16 @@
    
    (test-case
     "test-get-code39-dimension"
-    
-    (check-equal? (get-code39-dimension 77 1) '(97 . 85))
 
-    (check-equal? (get-code39-dimension 77 2) '(194 . 170))
+    (parameterize
+     ([*brick_width* 1])
+     (check-equal? (get-code39-dimension 77) '(97 . 85)))
+
+    (parameterize
+     ([*brick_width* 2])
+     (check-equal? (get-code39-dimension 77) '(194 . 170)))
     )
 
-   (test-case
-    "test-write"
-    
-    (dynamic-wind
-        (lambda ()
-          (void)
-          )
-        (lambda ()
-          (draw-code39 "CHEN" code39_write_test1)
-          (draw-code39 "chenxiao" code39_write_test2)
-          (draw-code39-checksum "CHEN" code39_write_test3)
-          )
-        (lambda ()
-          (delete-file code39_write_test1)
-          (delete-file code39_write_test2)
-          (delete-file code39_write_test3)
-          )))
-   
    (test-case
     "test-code39-checksum"
     
@@ -176,6 +164,30 @@
                   "chen")
     )
 
+   (test-case
+    "test-write"
+    
+    (dynamic-wind
+        (lambda ()
+          (void)
+          )
+        (lambda ()
+          (parameterize
+              (
+               [*front_color* "black"]
+               [*back_color* "white"]
+               [*brick_width* 4]
+               [*font_size* 4]
+               )
+            (draw-code39 'png "CHEN" code39_write_test1)
+            (draw-code39 'png "chenxiao" code39_write_test2)
+            (draw-code39-checksum 'png "CHEN" code39_write_test3)))
+        (lambda ()
+          (delete-file code39_write_test1)
+          (delete-file code39_write_test2)
+          (delete-file code39_write_test3)
+          )))
+   
    ))
 
 (run-tests test-lib)
