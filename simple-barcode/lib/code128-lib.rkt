@@ -9,7 +9,7 @@
           [code128-bars-checksum (-> string? natural?)]
           [code128->bars (-> list? string?)]
           [get-code128-dimension (-> natural? pair?)]
-          [draw-code128 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) void?)]
+          [draw-code128 (-> (or/c 'png 'svg) string? path-string? void?)]
           [code128-bar->string (-> string? string?)]
           [code128-verify (-> string? boolean?)]
           ))
@@ -488,39 +488,37 @@
          [actual_checksum (code128-bars-checksum bars)])
     (= (string->number checksum) actual_checksum)))
 
-(define (draw-code128 type code128 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [brick_width 2])
-  (parameterize
-      ([*brick_width* brick_width])
-    (let* ([encoded_list (encode-c128 code128)]
-           [data_code_list (shift-compress encoded_list)]
-           [checksum (code128-checksum (code->value data_code_list))]
-           [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
-           [dimension (get-code128-dimension (length code_list))]
-           [bars (code128->bars code_list)])
+(define (draw-code128 type code128 file_name)
+  (let* ([encoded_list (encode-c128 code128)]
+         [data_code_list (shift-compress encoded_list)]
+         [checksum (code128-checksum (code->value data_code_list))]
+         [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
+         [dimension (get-code128-dimension (length code_list))]
+         [bars (code128->bars code_list)])
       
-      (parameterize
-          (
-           [*width* (car dimension)]
-           [*height* (cdr dimension)]
-           [*front_color* (car color_pair)]
-           [*back_color* (cdr color_pair)]
-           )
         (let* (
                [x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
                [y (* (add1 (*top_margin*)) (*brick_width*))]
                [bar_height (* (*brick_width*) (*bar_height*))]
-               [foot_height (* (*brick_width*) (*bar_height*))])
+               [foot_height (* (*brick_width*) (*bar_height*))]
+               )
 
           (drawing
            type
+           (car dimension)
+           (cdr dimension)
            file_name
            (lambda ()
              (draw-bars type bars #:x x #:y y #:bar_height bar_height)
 
-             (draw-text
-              type
-              (regexp-replace* #rx"(.)" code128 "\\  ")
-              #:x (+ x (* (+ *code128_bars_length* 3) (*brick_width*)))
-              #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*))
-              #:font_size (*brick_width*)
-              ))))))))
+;             (draw-text
+;              type
+;              (regexp-replace* #rx"(.)" code128 "\\  ")
+;              #:x (+ x (* (+ *code128_bars_length* 3) (*brick_width*)))
+;              #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
+
+             (let loop ([loop_list (string->list code128)]
+                        [start_x (+ x (* 3 (*brick_width*)))])
+             (when (not (null? loop_list))
+                   (draw-text type (string (car loop_list)) #:x (+ start_x (* 2 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
+                   (loop (cdr loop_list) (+ start_x (* 12 (*brick_width*)))))))))))

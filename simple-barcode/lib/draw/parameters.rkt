@@ -1,8 +1,6 @@
 #lang racket
 
 (provide (contract-out
-          [*width* parameter?]
-          [*height* parameter?]
           [*font_size* parameter?]
           [*front_color* parameter?]
           [*back_color* parameter?]
@@ -12,9 +10,6 @@
           [*top_margin* parameter?]
           [*code_down_margin* parameter?]
           ))
-
-(define *width* (make-parameter #f))
-(define *height* (make-parameter #f))
 
 (define *front_color* (make-parameter #f))
 (define *back_color* (make-parameter #f))

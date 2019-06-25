@@ -6,8 +6,8 @@
           [code39->bars (-> string? string?)]
           [code39-checksum (-> string? natural?)]
           [get-code39-dimension (-> natural? pair?)]
-          [draw-code39 (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) void?)]
-          [draw-code39-checksum (->* ((or/c 'png 'svg) string? path-string?) (#:color_pair pair? #:brick_width natural?) void?)]
+          [draw-code39 (-> (or/c 'png 'svg) string? path-string? void?)]
+          [draw-code39-checksum (-> (or/c 'png 'svg) string? path-string? void?)]
           [code39-bar->string (-> string? boolean? string?)]
           [code39-verify (-> string? boolean?)]
           ))
@@ -355,45 +355,26 @@
        (string->list chars)))
      "100101101101")))
 
-(define (draw-code39-checksum type code39 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [_brick_width 2])
-  (parameterize
-   ([*brick_width* _brick_width])
-   (let* ([basic_value_char_map (get-code39-map #:type 'basic_value->char)]
-          [display_groups (code39->groups code39)]
-          [checksum (code39-checksum (foldr (lambda (a b) (string-append a b)) "" display_groups))]
-          [groups `(,@display_groups ,(string (hash-ref basic_value_char_map checksum)))]
-          [chars (code39-group->chars groups)]
-          [bars (code39->bars chars)]
-          [dimension (get-code39-dimension (string-length bars))])
+(define (draw-code39-checksum type code39 file_name)
+  (let* ([basic_value_char_map (get-code39-map #:type 'basic_value->char)]
+         [display_groups (code39->groups code39)]
+         [checksum (code39-checksum (foldr (lambda (a b) (string-append a b)) "" display_groups))]
+         [groups `(,@display_groups ,(string (hash-ref basic_value_char_map checksum)))]
+         [chars (code39-group->chars groups)]
+         [bars (code39->bars chars)]
+         [dimension (get-code39-dimension (string-length bars))])
 
-     (parameterize
-      (
-       [*width* (car dimension)]
-       [*height* (cdr dimension)]
-       [*front_color* (car color_pair)]
-       [*back_color* (cdr color_pair)]
-       )
-      (draw-code39-groups type bars groups display_groups file_name)))))
+      (draw-code39-groups type (car dimension) (cdr dimension) bars groups display_groups file_name)))
 
-(define (draw-code39 type code39 file_name #:color_pair [color_pair '("black" . "white")] #:brick_width [_brick_width 2])
-  (parameterize
-   ([*brick_width* _brick_width])
+(define (draw-code39 type code39 file_name)
    (let* ([groups (code39->groups code39)]
           [chars (code39-group->chars groups)]
           [bars (code39->bars chars)]
           [dimension (get-code39-dimension (string-length bars))])
 
-     (parameterize
-      (
-       [*width* (car dimension)]
-       [*height* (cdr dimension)]
-       [*front_color* (car color_pair)]
-       [*back_color* (cdr color_pair)]
-       )
-      
-      (draw-code39-groups type bars groups groups file_name)))))
+      (draw-code39-groups type (car dimension) (cdr dimension) bars groups groups file_name)))
 
-(define (draw-code39-groups type bars groups display_groups file_name)
+(define (draw-code39-groups type width height bars groups display_groups file_name)
   (let ([x (* (*quiet_zone_width*) (*brick_width*))]
         [y (* (add1 (*top_margin*)) (*brick_width*))]
         [bar_height (* (*bar_height*) (*brick_width*))]
@@ -402,13 +383,15 @@
 
     (drawing
      type
+     width
+     height
      file_name
      (lambda ()
        (draw-bars type bars #:x x #:y y #:bar_height bar_height)
 
-       (draw-text type "*" #:x (+ x (* 4 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)) #:font_size (*brick_width*))
+       (draw-text type "*" #:x (+ x (* 4 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
 
-       (draw-text type "*" #:x (+ x (* (- (string-length bars) 8) (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)) #:font_size (*brick_width*))
+       (draw-text type "*" #:x (+ x (* (- (string-length bars) 8) (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
 
        (let loop ([loop_list display_groups]
                   [start_x (+ x (* (+ *code39_bars_length* 1) (*brick_width*)))])
@@ -418,14 +401,11 @@
                      (draw-text type
                                 (string (hash-ref extend_chars_char_map (car loop_list)))
                                 #:x (+ start_x (* 3 (*brick_width*)))
-                                #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*))
-                                #:font_size (*brick_width*)
-                                )
+                                #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
                      (loop (cdr loop_list) (+ start_x (* (add1 *code39_bars_length*) (*brick_width*)))))
                    (begin
                      (draw-text type
                                 (string (hash-ref extend_chars_char_map (car loop_list)))
                                 #:x (+ start_x (* 8 (*brick_width*)))
-                                #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*))
-                                #:font_size (*brick_width*))
+                                #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
                      (loop (cdr loop_list) (+ start_x (* (add1 (* *code39_bars_length* 2)) (*brick_width*))))))))))))

@@ -5,8 +5,6 @@
 (require "svg.rkt")
 
 (provide (contract-out
-          [*width* parameter?]
-          [*height* parameter?]
           [*front_color* parameter?]
           [*font_size* parameter?]
           [*back_color* parameter?]
@@ -21,7 +19,7 @@
           [draw-svg-bars (-> string? #:x natural? #:y natural? #:bar_height natural? void?)]
           [draw-text (-> (or/c 'png 'svg) string? #:x natural? #:y natural? void?)]
           [draw-png-text (-> string? #:x natural? #:y natural? void?)]
-          [draw-svg-text (-> string? #:x natural? #:y natural? #:font_size natural? void?)]
+          [draw-svg-text (-> string? #:x natural? #:y natural? void?)]
           ))
 
 (define (drawing type width height file_name draw-func)
@@ -29,7 +27,7 @@
    [(eq? type 'png)
     (draw-png width height file_name draw-func)]
    [(eq? type 'svg)
-    (draw-svg file_name draw-func)]
+    (draw-svg width height file_name draw-func)]
    [else
     (draw-png width height file_name draw-func)]
    ))

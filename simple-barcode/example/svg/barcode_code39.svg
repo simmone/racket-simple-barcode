@@ -1,0 +1,71 @@
+<svg
+    version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="291" height="255"
+    >
+  <defs>
+    <rect id="s1" width="291" height="255" />
+    <rect id="s2" width="3" height="180" />
+    <text id="s3" font-size="12" >*</text>
+    <text id="s4" font-size="12" >*</text>
+    <text id="s5" font-size="12" >C</text>
+    <text id="s6" font-size="12" >H</text>
+    <text id="s7" font-size="12" >E</text>
+    <text id="s8" font-size="12" >N</text>
+  </defs>
+
+  <symbol id="default">
+    <use xlink:href="#s1" fill="white" />
+    <use xlink:href="#s2" x="30" y="33" fill="black" />
+    <use xlink:href="#s2" x="39" y="33" fill="black" />
+    <use xlink:href="#s2" x="45" y="33" fill="black" />
+    <use xlink:href="#s2" x="48" y="33" fill="black" />
+    <use xlink:href="#s2" x="54" y="33" fill="black" />
+    <use xlink:href="#s2" x="57" y="33" fill="black" />
+    <use xlink:href="#s2" x="63" y="33" fill="black" />
+    <use xlink:href="#s2" x="69" y="33" fill="black" />
+    <use xlink:href="#s2" x="72" y="33" fill="black" />
+    <use xlink:href="#s2" x="78" y="33" fill="black" />
+    <use xlink:href="#s2" x="81" y="33" fill="black" />
+    <use xlink:href="#s2" x="87" y="33" fill="black" />
+    <use xlink:href="#s2" x="96" y="33" fill="black" />
+    <use xlink:href="#s2" x="102" y="33" fill="black" />
+    <use xlink:href="#s2" x="108" y="33" fill="black" />
+    <use xlink:href="#s2" x="111" y="33" fill="black" />
+    <use xlink:href="#s2" x="117" y="33" fill="black" />
+    <use xlink:href="#s2" x="123" y="33" fill="black" />
+    <use xlink:href="#s2" x="132" y="33" fill="black" />
+    <use xlink:href="#s2" x="135" y="33" fill="black" />
+    <use xlink:href="#s2" x="141" y="33" fill="black" />
+    <use xlink:href="#s2" x="147" y="33" fill="black" />
+    <use xlink:href="#s2" x="150" y="33" fill="black" />
+    <use xlink:href="#s2" x="156" y="33" fill="black" />
+    <use xlink:href="#s2" x="162" y="33" fill="black" />
+    <use xlink:href="#s2" x="165" y="33" fill="black" />
+    <use xlink:href="#s2" x="174" y="33" fill="black" />
+    <use xlink:href="#s2" x="180" y="33" fill="black" />
+    <use xlink:href="#s2" x="186" y="33" fill="black" />
+    <use xlink:href="#s2" x="192" y="33" fill="black" />
+    <use xlink:href="#s2" x="198" y="33" fill="black" />
+    <use xlink:href="#s2" x="201" y="33" fill="black" />
+    <use xlink:href="#s2" x="207" y="33" fill="black" />
+    <use xlink:href="#s2" x="216" y="33" fill="black" />
+    <use xlink:href="#s2" x="219" y="33" fill="black" />
+    <use xlink:href="#s2" x="225" y="33" fill="black" />
+    <use xlink:href="#s2" x="234" y="33" fill="black" />
+    <use xlink:href="#s2" x="240" y="33" fill="black" />
+    <use xlink:href="#s2" x="243" y="33" fill="black" />
+    <use xlink:href="#s2" x="249" y="33" fill="black" />
+    <use xlink:href="#s2" x="252" y="33" fill="black" />
+    <use xlink:href="#s2" x="258" y="33" fill="black" />
+    <use xlink:href="#s3" x="42" y="224" fill="black" />
+    <use xlink:href="#s4" x="237" y="224" fill="black" />
+    <use xlink:href="#s5" x="78" y="224" fill="black" />
+    <use xlink:href="#s6" x="117" y="224" fill="black" />
+    <use xlink:href="#s7" x="156" y="224" fill="black" />
+    <use xlink:href="#s8" x="195" y="224" fill="black" />
+  </symbol>
+
+  <use xlink:href="#default" fill="none" />
+</svg>
