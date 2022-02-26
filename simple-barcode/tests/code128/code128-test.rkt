@@ -11,6 +11,7 @@
 (require racket/runtime-path)
 (define-runtime-path code128_write_test1 "code128_write_test1.png")
 (define-runtime-path code128_write_test2 "code128_write_test2.png")
+(define-runtime-path code128_write_test3 "code128_write_test3.png")
 
 (define test-lib
   (test-suite
@@ -173,10 +174,13 @@
                [*font_size* 4]
                )
             (draw-code128 'png "750103131130" code128_write_test1)
-            (draw-code128 'png "chenxiao770117" code128_write_test2)))
+            (draw-code128 'png "chenxiao770117" code128_write_test2)
+            (draw-code128 'png "%B%01-23-45" code128_write_test3)
+            ))
         (lambda ()
           (delete-file code128_write_test1)
           (delete-file code128_write_test2)
+          (delete-file code128_write_test3)
           )))
    
    ))

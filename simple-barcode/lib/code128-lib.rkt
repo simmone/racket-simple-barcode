@@ -138,7 +138,8 @@
           [(eq? code 'B)
            (set! ch (list-ref rec 2))]
           [(eq? code 'C)
-           (set! ch (list-ref rec 3))])
+           (set! ch (list-ref rec 3))]
+          )
          (cond
           [(eq? type 'char->bar)
            (hash-set! result_map ch (list-ref rec 4))]
@@ -146,6 +147,8 @@
            (hash-set! result_map (list-ref rec 4) ch)]
           [(eq? type 'char->weight)
            (hash-set! result_map ch (list-ref rec 0))]
+          [(eq? type 'weight->char)
+           (hash-set! result_map (list-ref rec 0) ch)]
           [(eq? type 'bar->weight)
            (hash-set! result_map (list-ref rec 4) (list-ref rec 0))]
           )))
@@ -489,36 +492,40 @@
     (= (string->number checksum) actual_checksum)))
 
 (define (draw-code128 type code128 file_name)
-  (let* ([encoded_list (encode-c128 code128)]
-         [data_code_list (shift-compress encoded_list)]
-         [checksum (code128-checksum (code->value data_code_list))]
-         [code_list `(,@data_code_list ,(number->string checksum) "Stop")]
-         [dimension (get-code128-dimension (length code_list))]
-         [bars (code128->bars code_list)])
-      
-        (let* (
-               [x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
-               [y (* (add1 (*top_margin*)) (*brick_width*))]
-               [bar_height (* (*brick_width*) (*bar_height*))]
-               [foot_height (* (*brick_width*) (*bar_height*))]
-               )
+  (let ([encoded_list #f]
+        [data_code_list #f]
+        [checksum #f]
+        [code_c_weight_char_map (get-code128-map #:code 'C #:type 'weight->char)]
+        [checksum_str #f]
+        [code_list #f]
+        [dimension #f]
+        [bars #f])
 
-          (drawing
-           type
-           (car dimension)
-           (cdr dimension)
-           file_name
-           (lambda ()
-             (draw-bars type bars #:x x #:y y #:bar_height bar_height)
+    (set! encoded_list (encode-c128 code128))
+    (set! data_code_list (shift-compress encoded_list))
+    (set! checksum (code128-checksum (code->value data_code_list)))
+    (set! checksum_str (hash-ref code_c_weight_char_map checksum))
+    (set! code_list `(,@data_code_list ,checksum_str "Stop"))
+    (set! dimension (get-code128-dimension (length code_list)))
+    (set! bars (code128->bars code_list))
+     
+    (let* (
+           [x (* (add1 (*quiet_zone_width*)) (*brick_width*))]
+           [y (* (add1 (*top_margin*)) (*brick_width*))]
+           [bar_height (* (*brick_width*) (*bar_height*))]
+           [foot_height (* (*brick_width*) (*bar_height*))]
+           )
 
-;             (draw-text
-;              type
-;              (regexp-replace* #rx"(.)" code128 "\\  ")
-;              #:x (+ x (* (+ *code128_bars_length* 3) (*brick_width*)))
-;              #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
+      (drawing
+       type
+       (car dimension)
+       (cdr dimension)
+       file_name
+       (lambda ()
+         (draw-bars type bars #:x x #:y y #:bar_height bar_height)
 
-             (let loop ([loop_list (string->list code128)]
-                        [start_x (+ x (* 3 (*brick_width*)))])
-             (when (not (null? loop_list))
-                   (draw-text type (string (car loop_list)) #:x (+ start_x (* 2 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
-                   (loop (cdr loop_list) (+ start_x (* 12 (*brick_width*)))))))))))
+         (let loop ([loop_list (string->list code128)]
+                    [start_x (+ x (* 3 (*brick_width*)))])
+           (when (not (null? loop_list))
+             (draw-text type (string (car loop_list)) #:x (+ start_x (* 2 (*brick_width*))) #:y (* (+ (*top_margin*) (*bar_height*) 2) (*brick_width*)))
+             (loop (cdr loop_list) (+ start_x (* 12 (*brick_width*)))))))))))
