@@ -1,6 +1,6 @@
 #lang racket
 
-(require simple-barcode)
+(require simple-svg)
 
 (barcode-write 'svg "750103131130" "barcode_ean13.svg")
 

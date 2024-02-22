@@ -19,33 +19,31 @@
                  width height
                  (lambda ()
                    (when (not (string=? (*back_color*) "transparent"))
-                         (let ([back_rect (svg-def-rect width height)]
+                         (let ([back_rect (svg-def-shape (new-rect width height))]
                                [back_sstyle (sstyle-new)])
                            
-                           (sstyle-set! back_sstyle 'fill (*back_color*))
-                           (svg-use-shape back_rect back_sstyle)))
+                           (set-SSTYLE-fill! back_sstyle (*back_color*))
+                           (svg-place-widget back_rect #:style back_sstyle)))
 
-                   (draw-func)
-
-                   (svg-show-default)))))))
+                   (draw-func)))))))
 
 (define (draw-svg-bars bars #:x x #:y y #:bar_height bar_height)
-  (let ([bar_rect (svg-def-rect (*brick_width*) bar_height)]
+  (let ([bar_rect (svg-def-shape (new-rect (*brick_width*) bar_height))]
         [bar_sstyle (sstyle-new)])
     
-    (sstyle-set! bar_sstyle 'fill (*front_color*))
+    (set-SSTYLE-fill! bar_sstyle (*front_color*))
 
     (let loop ([loop_list (string->list bars)]
                [loop_x x])
       (when (not (null? loop_list))
             (when (char=? (car loop_list) #\1)
-                  (svg-use-shape bar_rect bar_sstyle #:at? (cons loop_x y)))
+                  (svg-place-widget bar_rect #:style bar_sstyle #:at (cons loop_x y)))
             (loop (cdr loop_list) (+ loop_x (*brick_width*)))))))
 
 (define (draw-svg-text txt #:x x #:y y)
   (let* ([actual_font_size (* (add1 (*brick_width*)) (*font_size*))]
-         [text (svg-def-text txt #:font-size? actual_font_size)]
+         [text (svg-def-shape (new-text txt #:font-size actual_font_size))]
          [text_sstyle (sstyle-new)])
-    (sstyle-set! text_sstyle 'fill (*front_color*))
-    (svg-use-shape text text_sstyle #:at? (cons x (+ y (floor (* actual_font_size (/ 2 3))))))))
+    (set-SSTYLE-fill! text_sstyle (*front_color*))
+    (svg-place-widget text #:style text_sstyle #:at (cons x (+ y (floor (* actual_font_size (/ 2 3))))))))
 
